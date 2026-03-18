@@ -11,7 +11,6 @@ let
     if builtins.hasAttr manifest.meta.licenseSpdx licenseMap
     then licenseMap.${manifest.meta.licenseSpdx}
     else lib.licenses.unfree;
-  allowedBinPattern = lib.concatStringsSep "|" ([ manifest.binary.name ] ++ (manifest.binary.aliases or [ ]));
   aliasWrappers = lib.concatMapStrings
     (
       alias:
@@ -20,16 +19,6 @@ let
       ''
     )
     (manifest.binary.aliases or [ ]);
-  pruneBins = ''
-    for binPath in "$out/bin/"*; do
-      [ -e "$binPath" ] || continue
-      binName="$(basename "$binPath")"
-      case "$binName" in
-        ${allowedBinPattern}) ;;
-        *) rm -f "$binPath" ;;
-      esac
-    done
-  '';
   geminiPatch = lib.optionalString (manifest.package.repo == "gemini-cli") ''
     geminiNodeModules="$out/share/${manifest.package.repo}/node_modules"
     shellExecutionService="$(find "$geminiNodeModules" -path '*gemini-cli-core*/dist/src/services/shellExecutionService.js' | head -n 1)"
@@ -172,29 +161,29 @@ EOF
     fi
   '';
   basePackage = bun2nix.writeBunApplication {
-  pname = manifest.package.repo;
-  version = manifest.package.version;
-  packageJson = ../package.json;
-  src = lib.cleanSource ../.;
-  dontUseBunBuild = true;
-  dontUseBunCheck = true;
-  startScript = ''
-    bunx ${manifest.binary.upstreamName or manifest.binary.name} "$@"
-  '';
-  bunDeps = bun2nix.fetchBunDeps {
-    bunNix = ../bun.nix;
-  };
-  postInstall = ''
-    ${geminiPatch}
-  '';
-  meta = with lib; {
-    description = manifest.meta.description;
-    homepage = manifest.meta.homepage;
-    license = resolvedLicense;
-    mainProgram = manifest.binary.name;
-    platforms = platforms.linux ++ platforms.darwin;
-    broken = manifest.stubbed || !(builtins.pathExists ../bun.nix);
-  };
+    pname = manifest.package.repo;
+    version = manifest.package.version;
+    packageJson = ../package.json;
+    src = lib.cleanSource ../.;
+    dontUseBunBuild = true;
+    dontUseBunCheck = true;
+    startScript = ''
+      bunx ${manifest.binary.upstreamName or manifest.binary.name} "$@"
+    '';
+    bunDeps = bun2nix.fetchBunDeps {
+      bunNix = ../bun.nix;
+    };
+    postInstall = ''
+      ${geminiPatch}
+    '';
+    meta = with lib; {
+      description = manifest.meta.description;
+      homepage = manifest.meta.homepage;
+      license = resolvedLicense;
+      mainProgram = manifest.binary.name;
+      platforms = platforms.linux ++ platforms.darwin;
+      broken = manifest.stubbed || !(builtins.pathExists ../bun.nix);
+    };
   };
 in
 symlinkJoin {
