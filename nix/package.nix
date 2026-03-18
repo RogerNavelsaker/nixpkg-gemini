@@ -26,6 +26,8 @@ let
     shellToolMessage="$(find "$geminiNodeModules" -path '*gemini-cli*/dist/src/ui/components/messages/ShellToolMessage.js' | head -n 1)"
     backgroundShellDisplay="$(find "$geminiNodeModules" -path '*gemini-cli*/dist/src/ui/components/BackgroundShellDisplay.js' | head -n 1)"
     nodePtyUnix="$(find "$geminiNodeModules" -path '*@lydell/node-pty/unixTerminal.js' | head -n 1)"
+    handleAutoUpdate="$(find "$geminiNodeModules" -path '*gemini-cli*/dist/src/utils/handleAutoUpdate.js' | head -n 1)"
+    updateCheck="$(find "$geminiNodeModules" -path '*gemini-cli*/dist/src/ui/utils/updateCheck.js' | head -n 1)"
 
     if [ -f "$shellExecutionService" ]; then
       substituteInPlace "$shellExecutionService" \
@@ -159,6 +161,19 @@ EOF
       )
       substituteInPlace "$nodePtyUnix" --replace-fail "$oldUnixResize" "$newUnixResize"
     fi
+
+    if [ -f "$handleAutoUpdate" ]; then
+      substituteInPlace "$handleAutoUpdate" \
+        --replace-fail "if (!settings.merged.general.enableAutoUpdateNotification) {" "if (true) {"
+    fi
+
+    if [ -f "$updateCheck" ]; then
+      substituteInPlace "$updateCheck" \
+        --replace-fail "if (!settings.merged.general.enableAutoUpdateNotification) {" "if (true) {"
+    fi
+
+    find "$geminiNodeModules" -name '*.py' -delete
+    find "$geminiNodeModules" -path '*/keytar/build' -prune -exec rm -rf '{}' +
   '';
   basePackage = bun2nix.writeBunApplication {
     pname = manifest.package.repo;
