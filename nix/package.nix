@@ -11,11 +11,6 @@ let
     if builtins.hasAttr manifest.meta.licenseSpdx licenseMap
     then licenseMap.${manifest.meta.licenseSpdx}
     else lib.licenses.unfree;
-  preserveWorkingDirectory = builtins.elem manifest.package.repo [
-    "gemini-cli"
-    "claude-code"
-    "codex"
-  ];
   aliasWrappers = lib.concatMapStrings
     (
       alias:
@@ -198,16 +193,12 @@ symlinkJoin {
   postBuild = ''
     rm -rf "$out/bin"
     mkdir -p "$out/bin"
-    if [ "${if preserveWorkingDirectory then "1" else ""}" = "1" ]; then
-      entrypoint="$(find "${basePackage}/share/${manifest.package.repo}/node_modules" -path "*/node_modules/${manifest.package.npmName}/${manifest.binary.entrypoint}" | head -n 1)"
-      cat > "$out/bin/${manifest.binary.name}" <<EOF
+    entrypoint="$(find "${basePackage}/share/${manifest.package.repo}/node_modules" -path "*/node_modules/${manifest.package.npmName}/${manifest.binary.entrypoint}" | head -n 1)"
+    cat > "$out/bin/${manifest.binary.name}" <<EOF
 #!${lib.getExe bash}
 exec ${lib.getExe' bun "bun"} "$entrypoint" "\$@"
 EOF
-      chmod +x "$out/bin/${manifest.binary.name}"
-    else
-      makeWrapper "${basePackage}/bin/${manifest.package.repo}" "$out/bin/${manifest.binary.name}"
-    fi
+    chmod +x "$out/bin/${manifest.binary.name}"
     ${aliasWrappers}
   '';
   meta = basePackage.meta;
