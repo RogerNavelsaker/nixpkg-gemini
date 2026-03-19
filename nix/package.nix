@@ -42,7 +42,11 @@ EOF
       alias:
       ''
         mkdir -p "${"$" + alias.name}/bin"
-        ln -s "$out/bin/${alias.name}" "${"$" + alias.name}/bin/${alias.name}"
+        cat > "${"$" + alias.name}/bin/${alias.name}" <<EOF
+#!${lib.getExe bash}
+exec "$out/bin/${manifest.binary.name}" ${renderAliasArgs alias.args} "\$@"
+EOF
+        chmod +x "${"$" + alias.name}/bin/${alias.name}"
       ''
     )
     aliasSpecs;
@@ -251,7 +255,6 @@ export GEMINI_FORCE_FILE_STORAGE=true
 exec ${lib.getExe' bun "bun"} "$entrypoint" "\$@"
 EOF
     chmod +x "$out/bin/${manifest.binary.name}"
-    ${aliasWrappers}
     ${aliasOutputLinks}
   '';
   meta = basePackage.meta;
