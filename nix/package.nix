@@ -14,14 +14,38 @@ let
     if builtins.hasAttr manifest.meta.licenseSpdx licenseMap
     then licenseMap.${manifest.meta.licenseSpdx}
     else lib.licenses.unfree;
+  aliasSpecs = map (
+    alias:
+    if builtins.isString alias then
+      {
+        name = alias;
+        args = [ ];
+      }
+    else
+      alias
+  ) (manifest.binary.aliases or [ ]);
+  renderAliasArgs = args: lib.concatMapStringsSep " " lib.escapeShellArg args;
   aliasWrappers = lib.concatMapStrings
     (
       alias:
       ''
-        makeWrapper "$out/bin/${manifest.binary.name}" "$out/bin/${alias}"
+        cat > "$out/bin/${alias.name}" <<EOF
+#!${lib.getExe bash}
+exec "$out/bin/${manifest.binary.name}" ${renderAliasArgs alias.args} "\$@"
+EOF
+        chmod +x "$out/bin/${alias.name}"
       ''
     )
-    (manifest.binary.aliases or [ ]);
+    aliasSpecs;
+  aliasOutputLinks = lib.concatMapStrings
+    (
+      alias:
+      ''
+        mkdir -p "${"$" + alias.name}/bin"
+        ln -s "$out/bin/${alias.name}" "${"$" + alias.name}/bin/${alias.name}"
+      ''
+    )
+    aliasSpecs;
   geminiPatch = lib.optionalString (manifest.package.repo == "gemini-cli") ''
     geminiNodeModules="$out/share/${manifest.package.repo}/node_modules"
     shellExecutionService="$(find "$geminiNodeModules" -path '*gemini-cli-core*/dist/src/services/shellExecutionService.js' | head -n 1)"
@@ -214,6 +238,7 @@ symlinkJoin {
   pname = manifest.binary.name;
   version = packageVersion;
   name = "${manifest.binary.name}-${packageVersion}";
+  outputs = [ "out" ] ++ map (alias: alias.name) aliasSpecs;
   paths = [ basePackage ];
   nativeBuildInputs = [ makeWrapper ];
   postBuild = ''
@@ -227,6 +252,7 @@ exec ${lib.getExe' bun "bun"} "$entrypoint" "\$@"
 EOF
     chmod +x "$out/bin/${manifest.binary.name}"
     ${aliasWrappers}
+    ${aliasOutputLinks}
   '';
   meta = basePackage.meta;
 }

@@ -9,7 +9,14 @@
     "name": "gemini",
     "upstreamName": "gemini",
     "entrypoint": "dist/index.js",
-    "aliases": []
+    "aliases": [
+      {
+        "name": "gmi",
+        "args": [
+          "--yolo"
+        ]
+      }
+    ]
   },
   "dist": {
     "url": "https://registry.npmjs.org/@google/gemini-cli/-/gemini-cli-0.34.0.tgz",
