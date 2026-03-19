@@ -28,6 +28,7 @@ let
     nodePtyUnix="$(find "$geminiNodeModules" -path '*@lydell/node-pty/unixTerminal.js' | head -n 1)"
     handleAutoUpdate="$(find "$geminiNodeModules" -path '*gemini-cli*/dist/src/utils/handleAutoUpdate.js' | head -n 1)"
     updateCheck="$(find "$geminiNodeModules" -path '*gemini-cli*/dist/src/ui/utils/updateCheck.js' | head -n 1)"
+    keychainService="$(find "$geminiNodeModules" -path '*gemini-cli-core*/dist/src/services/keychainService.js' | head -n 1)"
 
     if [ -f "$shellExecutionService" ]; then
       substituteInPlace "$shellExecutionService" \
@@ -172,6 +173,11 @@ EOF
         --replace-fail "if (!settings.merged.general.enableAutoUpdateNotification) {" "if (true) {"
     fi
 
+    if [ -f "$keychainService" ]; then
+      substituteInPlace "$keychainService" \
+        --replace-fail "            debugLogger.log('Using FileKeychain fallback for secure storage.');" ""
+    fi
+
     find "$geminiNodeModules" -name '*.py' -delete
     find "$geminiNodeModules" -path '*/keytar/build' -prune -exec rm -rf '{}' +
   '';
@@ -211,6 +217,7 @@ symlinkJoin {
     entrypoint="$(find "${basePackage}/share/${manifest.package.repo}/node_modules" -path "*/node_modules/${manifest.package.npmName}/${manifest.binary.entrypoint}" | head -n 1)"
     cat > "$out/bin/${manifest.binary.name}" <<EOF
 #!${lib.getExe bash}
+export GEMINI_FORCE_FILE_STORAGE=true
 exec ${lib.getExe' bun "bun"} "$entrypoint" "\$@"
 EOF
     chmod +x "$out/bin/${manifest.binary.name}"
