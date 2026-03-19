@@ -9,13 +9,13 @@ Nix packaging for `@google/gemini-cli` using Bun and `bun2nix`.
 - Installed binary: `gemini`
 - Upstream executable invoked by Bun: `gemini`
 
-## What this repo does
+## What This Repo Does
 
 - Uses `bun.lock` and generated `bun.nix` as the dependency lock surface for Nix
-- Builds an internal Bun application package with `bun2nix`
+- Builds the upstream package as an internal Bun application with `bun2nix`
 - Exposes only the canonical binary name `gemini`
 - Applies Gemini-specific package-time patches for the EBADF PTY crash and aggressive retry behavior
-- Provides a GitHub Actions workflow that can sync the pinned npm version
+- Provides a manifest sync script for updating the pinned npm metadata
 
 ## Files
 
@@ -24,14 +24,8 @@ Nix packaging for `@google/gemini-cli` using Bun and `bun2nix`.
 - `nix/package-manifest.json`: pinned package metadata and exposed binary name
 - `scripts/sync-from-npm.ts`: updates pinned npm metadata without changing the canonical output binary
 
-## Usage
-
-```bash
-nix build
-./result/bin/gemini --help
-```
-
 ## Notes
 
-- This package does not set `TERM` for you.
-- If you want wrapper-level `TERM` behavior or local aliases such as `gmi`, set those outside this repo.
+- The default `out` output installs the longform binary name `gemini`.
+- The shortform wrapper `gmi --yolo` is available as a separate Nix output, not in the default `out` output.
+- This repo also does not set `TERM` for you.
