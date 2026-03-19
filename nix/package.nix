@@ -2,6 +2,9 @@
 
 let
   manifest = builtins.fromJSON (builtins.readFile ./package-manifest.json);
+  packageVersion =
+    manifest.package.version
+    + lib.optionalString (manifest.package ? packageRevision) "-r${toString manifest.package.packageRevision}";
   licenseMap = {
     "MIT" = lib.licenses.mit;
     "Apache-2.0" = lib.licenses.asl20;
@@ -183,7 +186,7 @@ EOF
   '';
   basePackage = bun2nix.writeBunApplication {
     pname = manifest.package.repo;
-    version = manifest.package.version;
+    version = packageVersion;
     packageJson = ../package.json;
     src = lib.cleanSource ../.;
     dontUseBunBuild = true;
@@ -208,7 +211,9 @@ EOF
   };
 in
 symlinkJoin {
-  name = "${manifest.binary.name}-${manifest.package.version}";
+  pname = manifest.binary.name;
+  version = packageVersion;
+  name = "${manifest.binary.name}-${packageVersion}";
   paths = [ basePackage ];
   nativeBuildInputs = [ makeWrapper ];
   postBuild = ''
