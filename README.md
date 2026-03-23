@@ -1,4 +1,4 @@
-# gemini-cli
+# nixpkg-gemini
 
 Nix packaging for `@google/gemini-cli` using Bun and `bun2nix`.
 
