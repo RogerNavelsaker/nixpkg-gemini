@@ -1,5 +1,5 @@
 {
-  description = "Nix packaging for the forked Gemini CLI";
+  description = "Nix packaging scaffold for forked @google/gemini-cli";
 
   nixConfig = {
     extra-substituters = [
@@ -14,13 +14,15 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    bun2nix.url = "github:nix-community/bun2nix";
+    bun2nix.inputs.nixpkgs.follows = "nixpkgs";
     gemini-cli-src = {
-      url = "github:RogerNavelsaker/gemini-cli";
+      url = "github:RogerNavelsaker/gemini-cli/6a1cf25e936c02c3efc4686014a0cf3a3d083732";
       flake = false;
     };
   };
 
-  outputs = { gemini-cli-src, nixpkgs, ... }:
+  outputs = { nixpkgs, bun2nix, gemini-cli-src, ... }:
     let
       systems = [
         "x86_64-linux"
@@ -31,6 +33,7 @@
       forAllSystems = f: nixpkgs.lib.genAttrs systems (system: f {
         pkgs = import nixpkgs {
           inherit system;
+          overlays = [ bun2nix.overlays.default ];
         };
       });
     in {
@@ -43,9 +46,9 @@
       devShells = forAllSystems ({ pkgs }: {
         default = pkgs.mkShell {
           packages = with pkgs; [
+            bun
+            bun2nix
             jq
-            nodejs_20
-            prefetch-npm-deps
             nixfmt-rfc-style
           ];
         };
