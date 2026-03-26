@@ -8,7 +8,7 @@
   "binary": {
     "name": "gemini",
     "upstreamName": "gemini",
-    "entrypoint": "bundle/gemini.js",
+    "entrypoint": "dist/index.js",
     "aliases": [
       {
         "name": "gmi",
@@ -19,8 +19,8 @@
     ]
   },
   "dist": {
-    "url": "https://github.com/RogerNavelsaker/gemini-cli/tree/6a1cf25e936c02c3efc4686014a0cf3a3d083732",
-    "hash": "git"
+    "url": "https://github.com/RogerNavelsaker/gemini-cli",
+    "hash": null
   },
   "meta": {
     "description": "Gemini CLI",

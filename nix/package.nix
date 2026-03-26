@@ -1,9 +1,18 @@
-{ bash, bun, bun2nix, gemini-cli-src, lib, makeWrapper, runCommand, symlinkJoin }:
+{
+  bash,
+  buildNpmPackage,
+  gemini-cli-src,
+  lib,
+  makeBinaryWrapper,
+  nodejs_20,
+  symlinkJoin,
+}:
 
 let
   manifest = builtins.fromJSON (builtins.readFile ./package-manifest.json);
+  packageJson = builtins.fromJSON (builtins.readFile "${gemini-cli-src}/package.json");
   packageVersion =
-    manifest.package.version
+    packageJson.version
     + lib.optionalString (manifest.package ? packageRevision) "-r${toString manifest.package.packageRevision}";
   licenseMap = {
     "MIT" = lib.licenses.mit;
@@ -38,42 +47,37 @@ EOF
       ''
     )
     aliasSpecs;
-  cleanPackagingSource = lib.cleanSource ../.;
-  sourceTree = runCommand "gemini-cli-packaging-source" { } ''
-    mkdir -p "$out"
-    cp -a ${cleanPackagingSource}/. "$out/"
-    chmod -R u+w "$out"
-    mkdir -p "$out/vendor"
-    cp -a ${gemini-cli-src}/. "$out/vendor/gemini-cli"
-  '';
-  geminiCleanup = lib.optionalString (manifest.package.repo == "gemini-cli") ''
-    geminiNodeModules="$out/share/${manifest.package.repo}/node_modules"
-    find "$geminiNodeModules" -name '*.py' -delete
-    find "$geminiNodeModules" -path '*/keytar/build' -prune -exec rm -rf '{}' +
-  '';
-  basePackage = bun2nix.writeBunApplication {
+  basePackage = buildNpmPackage {
     pname = manifest.package.repo;
     version = packageVersion;
-    packageJson = "${sourceTree}/package.json";
-    src = sourceTree;
-    dontUseBunBuild = true;
-    dontUseBunCheck = true;
-    startScript = ''
-      bunx ${manifest.binary.upstreamName or manifest.binary.name} "$@"
+    src = gemini-cli-src;
+    npmDepsFetcherVersion = 2;
+    npmDepsHash = "sha256-YfUPuXnmVbxMJ0wFYwWGm06h6/nlT/nreVhHg8A00OU=";
+    npmFlags = [ "--omit=optional" ];
+    npmBuildScript = "bundle";
+    nativeBuildInputs = [ makeBinaryWrapper ];
+
+    installPhase = ''
+      runHook preInstall
+
+      mkdir -p "$out/libexec/gemini-cli"
+      cp -rL bundle "$out/libexec/gemini-cli/"
+      cp package.json README.md LICENSE "$out/libexec/gemini-cli/"
+
+      mkdir -p "$out/bin"
+      makeBinaryWrapper ${lib.getExe nodejs_20} "$out/bin/${manifest.binary.name}" \
+        --set GEMINI_FORCE_FILE_STORAGE true \
+        --add-flags "$out/libexec/gemini-cli/bundle/gemini.js"
+
+      runHook postInstall
     '';
-    bunDeps = bun2nix.fetchBunDeps {
-      bunNix = "${sourceTree}/bun.nix";
-    };
-    postInstall = ''
-      ${geminiCleanup}
-    '';
+
     meta = with lib; {
       description = manifest.meta.description;
       homepage = manifest.meta.homepage;
       license = resolvedLicense;
       mainProgram = manifest.binary.name;
       platforms = platforms.linux ++ platforms.darwin;
-      broken = manifest.stubbed || !(builtins.pathExists ../bun.nix);
     };
   };
 in
@@ -83,12 +87,7 @@ symlinkJoin {
   name = "${manifest.binary.name}-${packageVersion}";
   outputs = [ "out" ] ++ map (alias: alias.name) aliasSpecs;
   paths = [ basePackage ];
-  nativeBuildInputs = [ makeWrapper ];
   postBuild = ''
-    rm -rf "$out/bin"
-    mkdir -p "$out/bin"
-    makeWrapper "${basePackage}/bin/${manifest.package.repo}" "$out/bin/${manifest.binary.name}" \
-      --set GEMINI_FORCE_FILE_STORAGE true
     ${aliasOutputLinks}
   '';
   meta = basePackage.meta;
