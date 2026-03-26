@@ -45,11 +45,11 @@
     "gemini-cli-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1774490085,
-        "narHash": "sha256-7LWrA/wIoEUcl9bdiEktnJLhyXbfaZmRXbqfhjCX56w=",
+        "lastModified": 1774492697,
+        "narHash": "sha256-w2sBRg5xSDHhzm799R09O+1l0oizFfyA+ZrQnKljF5I=",
         "owner": "RogerNavelsaker",
         "repo": "gemini-cli",
-        "rev": "c2cbdf13d140f6cc14ffc5c05e420542cfcfd5cd",
+        "rev": "83cb5ebcfeb2c9cb1513ef88e7c1a4fc3de55a1d",
         "type": "github"
       },
       "original": {
