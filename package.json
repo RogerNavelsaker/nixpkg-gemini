@@ -6,10 +6,13 @@
   "scripts": {
     "show-manifest": "bun --eval \"console.log(await Bun.file('nix/package-manifest.json').text())\"",
     "sync:manifest": "bun run scripts/sync-from-npm.ts",
-    "postinstall": "bunx bun2nix -o bun.nix"
+    "postinstall": "bun x bun2nix -o bun.nix"
   },
+  "trustedDependencies": [
+    "@rona/gemini-cli-prep"
+  ],
   "dependencies": {
-    "@google/gemini-cli": "0.34.0"
+    "@rona/gemini-cli-prep": "./vendor/gemini-cli"
   },
   "devDependencies": {
     "@types/bun": "^1.3.10",

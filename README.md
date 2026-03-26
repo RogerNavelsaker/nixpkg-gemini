@@ -1,6 +1,6 @@
 # nixpkg-gemini
 
-Nix packaging for the forked `RogerNavelsaker/gemini-cli` source repo.
+Nix packaging for the prepared `RogerNavelsaker/gemini-cli` package repo.
 
 ## Package
 
@@ -11,15 +11,15 @@ Nix packaging for the forked `RogerNavelsaker/gemini-cli` source repo.
 
 ## What This Repo Does
 
-- Fetches the forked Gemini CLI source as a flake input
-- Builds the fork with `buildNpmPackage`
-- Wraps the packaged CLI with `GEMINI_FORCE_FILE_STORAGE=true`
-- Exposes only packaging concerns in this repo
+- Vendors the prepared package repo as a local Bun dependency
+- Resolves the upstream npm package graph through `bun.lock` and `bun.nix`
+- Wraps the final CLI with `GEMINI_FORCE_FILE_STORAGE=true`
+- Keeps runtime patching out of this repo
 
 ## Files
 
-- `flake.nix`: flake entrypoint and source input pin
-- `nix/package.nix`: packaging-only derivation and wrapper outputs
+- `flake.nix`: flake entrypoint and prep repo input pin
+- `nix/package.nix`: Bun wrapper derivation and final binary outputs
 - `nix/package-manifest.json`: binary metadata and package version
 
 ## Notes

@@ -1,18 +1,18 @@
 {
   bash,
-  buildNpmPackage,
+  bun,
+  bun2nix,
   gemini-cli-src,
   lib,
-  makeBinaryWrapper,
-  nodejs_20,
+  makeWrapper,
+  runCommand,
   symlinkJoin,
 }:
 
 let
   manifest = builtins.fromJSON (builtins.readFile ./package-manifest.json);
-  packageJson = builtins.fromJSON (builtins.readFile "${gemini-cli-src}/package.json");
   packageVersion =
-    packageJson.version
+    manifest.package.version
     + lib.optionalString (manifest.package ? packageRevision) "-r${toString manifest.package.packageRevision}";
   licenseMap = {
     "MIT" = lib.licenses.mit;
@@ -47,31 +47,27 @@ EOF
       ''
     )
     aliasSpecs;
-  basePackage = buildNpmPackage {
+  cleanPackagingSource = lib.cleanSource ../.;
+  sourceTree = runCommand "gemini-cli-packaging-source" { } ''
+    mkdir -p "$out"
+    cp -a ${cleanPackagingSource}/. "$out/"
+    chmod -R u+w "$out"
+    mkdir -p "$out/vendor"
+    cp -a ${gemini-cli-src}/. "$out/vendor/gemini-cli"
+  '';
+  basePackage = bun2nix.writeBunApplication {
     pname = manifest.package.repo;
     version = packageVersion;
-    src = gemini-cli-src;
-    npmDepsFetcherVersion = 2;
-    npmDepsHash = "sha256-YfUPuXnmVbxMJ0wFYwWGm06h6/nlT/nreVhHg8A00OU=";
-    npmFlags = [ "--omit=optional" ];
-    npmBuildScript = "bundle";
-    nativeBuildInputs = [ makeBinaryWrapper ];
-
-    installPhase = ''
-      runHook preInstall
-
-      mkdir -p "$out/libexec/gemini-cli"
-      cp -rL bundle "$out/libexec/gemini-cli/"
-      cp package.json README.md LICENSE "$out/libexec/gemini-cli/"
-
-      mkdir -p "$out/bin"
-      makeBinaryWrapper ${lib.getExe nodejs_20} "$out/bin/${manifest.binary.name}" \
-        --set GEMINI_FORCE_FILE_STORAGE true \
-        --add-flags "$out/libexec/gemini-cli/bundle/gemini.js"
-
-      runHook postInstall
+    packageJson = "${sourceTree}/package.json";
+    src = sourceTree;
+    dontUseBunBuild = true;
+    dontUseBunCheck = true;
+    startScript = ''
+      bunx ${manifest.package.repo} "$@"
     '';
-
+    bunDeps = bun2nix.fetchBunDeps {
+      bunNix = "${sourceTree}/bun.nix";
+    };
     meta = with lib; {
       description = manifest.meta.description;
       homepage = manifest.meta.homepage;
@@ -87,7 +83,17 @@ symlinkJoin {
   name = "${manifest.binary.name}-${packageVersion}";
   outputs = [ "out" ] ++ map (alias: alias.name) aliasSpecs;
   paths = [ basePackage ];
+  nativeBuildInputs = [ makeWrapper ];
   postBuild = ''
+    rm -rf "$out/bin"
+    mkdir -p "$out/bin"
+    entrypoint="$(find "${basePackage}/share/${manifest.package.repo}/node_modules" -path "*/node_modules/${manifest.package.npmName}/${manifest.binary.entrypoint}" | head -n 1)"
+    cat > "$out/bin/${manifest.binary.name}" <<EOF
+#!${lib.getExe bash}
+export GEMINI_FORCE_FILE_STORAGE=true
+exec ${lib.getExe' bun "bun"} "$entrypoint" "\$@"
+EOF
+    chmod +x "$out/bin/${manifest.binary.name}"
     ${aliasOutputLinks}
   '';
   meta = basePackage.meta;
