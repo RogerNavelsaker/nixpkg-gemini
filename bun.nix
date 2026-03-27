@@ -77,9 +77,17 @@
     url = "https://registry.npmjs.org/@google/gemini-cli-core/-/gemini-cli-core-0.35.1.tgz";
     hash = "sha512-cU/v8X6RhpiJmisUdK5MOOzQtDZ78Mce8o/5/UBxC4oKqKlI9eux1Jm69g6Nu8zxVVIPgtxnE5CvXn+ltp9iNg==";
   };
+  "@google/gemini-cli-core@0.35.2" = fetchurl {
+    url = "https://registry.npmjs.org/@google/gemini-cli-core/-/gemini-cli-core-0.35.2.tgz";
+    hash = "sha512-Loc6csOAlrymAXd0ve0pMiPnXqfpmYaLNsk1lcwXnl3va6fhLhh1le9GASpgfdpu5v/iYpRhiiyw/xakm+d1yg==";
+  };
   "@google/gemini-cli@0.35.1" = fetchurl {
     url = "https://registry.npmjs.org/@google/gemini-cli/-/gemini-cli-0.35.1.tgz";
     hash = "sha512-jXphOSUrh68DF3hHTnSQQt9Ls6ABQ+TmLDAPL0DkR+0XUqEYvLI50Zjt4yMF1KMG4xud8RthBBkXUoIO/u9iaA==";
+  };
+  "@google/gemini-cli@0.35.2" = fetchurl {
+    url = "https://registry.npmjs.org/@google/gemini-cli/-/gemini-cli-0.35.2.tgz";
+    hash = "sha512-NfmGSgaaSl+TB68lnTltu31FbUE1fmUD8e0iM5R1eHRAvlcPTe4bai6NPCwxbPbvU4AMnrfMdt8VUvlg0CZ8og==";
   };
   "@google/genai@1.30.0" = fetchurl {
     url = "https://registry.npmjs.org/@google/genai/-/genai-1.30.0.tgz";

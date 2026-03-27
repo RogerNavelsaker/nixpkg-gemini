@@ -3,7 +3,7 @@
   "package": {
     "repo": "gemini-cli",
     "npmName": "@google/gemini-cli",
-    "version": "0.35.1"
+    "version": "0.35.2"
   },
   "binary": {
     "name": "gemini",
@@ -19,8 +19,8 @@
     ]
   },
   "dist": {
-    "url": "https://registry.npmjs.org/@google/gemini-cli/-/gemini-cli-0.35.1.tgz",
-    "hash": "sha512-jXphOSUrh68DF3hHTnSQQt9Ls6ABQ+TmLDAPL0DkR+0XUqEYvLI50Zjt4yMF1KMG4xud8RthBBkXUoIO/u9iaA=="
+    "url": "https://registry.npmjs.org/@google/gemini-cli/-/gemini-cli-0.35.2.tgz",
+    "hash": "sha512-NfmGSgaaSl+TB68lnTltu31FbUE1fmUD8e0iM5R1eHRAvlcPTe4bai6NPCwxbPbvU4AMnrfMdt8VUvlg0CZ8og=="
   },
   "meta": {
     "description": "Gemini CLI",
