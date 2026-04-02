@@ -3,12 +3,12 @@
   "package": {
     "repo": "gemini-cli",
     "npmName": "@google/gemini-cli",
-    "version": "0.35.3"
+    "version": "0.36.0"
   },
   "binary": {
     "name": "gemini",
     "upstreamName": "gemini",
-    "entrypoint": "dist/index.js",
+    "entrypoint": "bundle/gemini.js",
     "aliases": [
       {
         "name": "gmi",
@@ -19,8 +19,8 @@
     ]
   },
   "dist": {
-    "url": "https://registry.npmjs.org/@google/gemini-cli/-/gemini-cli-0.35.3.tgz",
-    "hash": "sha512-88kHZEQ6Bcl0XOQ3bnqTnUAsCZ9NvNkhx9TzSBSN4RmAhN9mQlQ/5QRI8kk3vz+isRnuXVbQaXOo8h3Wd1t8iA=="
+    "url": "https://registry.npmjs.org/@google/gemini-cli/-/gemini-cli-0.36.0.tgz",
+    "hash": "sha512-/5DeGPJhqDr/JoPgSfjCj+LcmuyPB1Fwrodpw1MaeK4RG/8xSME+bwg8ar1KCuQMCrQiI3UFUhan7jQHazMwTQ=="
   },
   "meta": {
     "description": "Gemini CLI",
