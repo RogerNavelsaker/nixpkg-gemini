@@ -1,0 +1,30 @@
+{
+  "stubbed": false,
+  "package": {
+    "repo": "gemini-cli",
+    "npmName": "@google/gemini-cli",
+    "version": "0.35.2"
+  },
+  "binary": {
+    "name": "gemini",
+    "upstreamName": "gemini",
+    "entrypoint": "dist/index.js",
+    "aliases": [
+      {
+        "name": "gmi",
+        "args": [
+          "--yolo"
+        ]
+      }
+    ]
+  },
+  "dist": {
+    "url": "https://registry.npmjs.org/@google/gemini-cli/-/gemini-cli-0.35.2.tgz",
+    "hash": "sha512-NfmGSgaaSl+TB68lnTltu31FbUE1fmUD8e0iM5R1eHRAvlcPTe4bai6NPCwxbPbvU4AMnrfMdt8VUvlg0CZ8og=="
+  },
+  "meta": {
+    "description": "Gemini CLI",
+    "homepage": "https://github.com/google-gemini/gemini-cli#readme",
+    "licenseSpdx": "Apache-2.0"
+  }
+}
