@@ -48,7 +48,6 @@ jobs:
 
       - name: Commit manifest update
         id: commit
-        if: steps.tag.outputs.exists == 'false'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -57,7 +56,12 @@ jobs:
             echo "changed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          git commit -m "chore: sync ${{ steps.version.outputs.version }} from npm"
+          if [ "${{ steps.tag.outputs.exists }}" = "true" ]; then
+            commit_message="chore: restore sync ${{ steps.version.outputs.version }} from npm"
+          else
+            commit_message="chore: sync ${{ steps.version.outputs.version }} from npm"
+          fi
+          git commit -m "$commit_message"
           git push
           echo "changed=true" >> "$GITHUB_OUTPUT"
 
