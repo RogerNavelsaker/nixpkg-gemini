@@ -16,13 +16,21 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     bun2nix.url = "github:nix-community/bun2nix";
     bun2nix.inputs.nixpkgs.follows = "nixpkgs";
-    gemini-cli-src = {
-      url = "github:RogerNavelsaker/gemini-cli";
+    gemini-cli-main-src = {
+      url = "github:google-gemini/gemini-cli/main";
+      flake = false;
+    };
+    gemini-cli-nightly-src = {
+      url = "github:google-gemini/gemini-cli/v0.40.0-nightly.20260415.g06e7621b2";
+      flake = false;
+    };
+    gemini-cli-stable-src = {
+      url = "github:google-gemini/gemini-cli/v0.38.2";
       flake = false;
     };
   };
 
-  outputs = { bun2nix, gemini-cli-src, nixpkgs, ... }:
+  outputs = { self, bun2nix, nixpkgs, gemini-cli-main-src, gemini-cli-nightly-src, gemini-cli-stable-src, ... }:
     let
       systems = [
         "x86_64-linux"
@@ -39,7 +47,16 @@
     in {
       packages = forAllSystems ({ pkgs }: {
         default = pkgs.callPackage ./nix/package.nix {
-          inherit gemini-cli-src;
+          gemini-cli-src = gemini-cli-stable-src;
+        };
+        main = pkgs.callPackage ./nix/package.nix {
+          gemini-cli-src = gemini-cli-main-src;
+        };
+        nightly = pkgs.callPackage ./nix/package.nix {
+          gemini-cli-src = gemini-cli-nightly-src;
+        };
+        stable = pkgs.callPackage ./nix/package.nix {
+          gemini-cli-src = gemini-cli-stable-src;
         };
       });
 

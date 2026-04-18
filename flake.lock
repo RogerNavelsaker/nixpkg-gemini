@@ -42,18 +42,53 @@
         "type": "github"
       }
     },
-    "gemini-cli-src": {
+    "gemini-cli-main-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1774492697,
-        "narHash": "sha256-w2sBRg5xSDHhzm799R09O+1l0oizFfyA+ZrQnKljF5I=",
-        "owner": "RogerNavelsaker",
+        "lastModified": 1776470882,
+        "narHash": "sha256-Kk4r/yx2qkeRkPrGyPp0wC/qnmEB8IzuYEft+qhkgLg=",
+        "owner": "google-gemini",
         "repo": "gemini-cli",
-        "rev": "83cb5ebcfeb2c9cb1513ef88e7c1a4fc3de55a1d",
+        "rev": "8573650253888a252500856e240385ff8a2553c8",
         "type": "github"
       },
       "original": {
-        "owner": "RogerNavelsaker",
+        "owner": "google-gemini",
+        "ref": "main",
+        "repo": "gemini-cli",
+        "type": "github"
+      }
+    },
+    "gemini-cli-nightly-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1776226467,
+        "narHash": "sha256-UiUl7LVFNkSxVstY2iMaDZxxraPj0eXCCh8UpTQHaAQ=",
+        "owner": "google-gemini",
+        "repo": "gemini-cli",
+        "rev": "4995e9e50866ca078a756c9b4c8ec40349313ab4",
+        "type": "github"
+      },
+      "original": {
+        "owner": "google-gemini",
+        "ref": "v0.40.0-nightly.20260415.g06e7621b2",
+        "repo": "gemini-cli",
+        "type": "github"
+      }
+    },
+    "gemini-cli-stable-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1776450622,
+        "narHash": "sha256-DPJMpm+hOQQxG87/NyrCrlomeR4AD1WNfNoIsdaakaE=",
+        "owner": "google-gemini",
+        "repo": "gemini-cli",
+        "rev": "b0ed611a0607c9920f8fff52db8fe55078946420",
+        "type": "github"
+      },
+      "original": {
+        "owner": "google-gemini",
+        "ref": "v0.38.2",
         "repo": "gemini-cli",
         "type": "github"
       }
@@ -107,7 +142,9 @@
     "root": {
       "inputs": {
         "bun2nix": "bun2nix",
-        "gemini-cli-src": "gemini-cli-src",
+        "gemini-cli-main-src": "gemini-cli-main-src",
+        "gemini-cli-nightly-src": "gemini-cli-nightly-src",
+        "gemini-cli-stable-src": "gemini-cli-stable-src",
         "nixpkgs": "nixpkgs"
       }
     },

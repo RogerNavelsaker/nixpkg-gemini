@@ -18,10 +18,6 @@
       }
     ]
   },
-  "dist": {
-    "url": "https://registry.npmjs.org/@google/gemini-cli/-/gemini-cli-0.38.2.tgz",
-    "hash": "sha512-eXl9DHePPaJ2wHw5lGNMFy+Ah0pMD5H2EZpjzWKCvnfzXQFYu9tTIAGzeAgr7ZtpLR6WkFgL0xqX9m2RJRwMvg=="
-  },
   "meta": {
     "description": "Gemini CLI",
     "homepage": "https://github.com/google-gemini/gemini-cli#readme",
