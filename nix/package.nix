@@ -8,6 +8,7 @@
   npmDepsHash,
   perl,
   runCommand,
+  stdenv,
   symlinkJoin,
 }:
 
@@ -142,6 +143,14 @@ import { handleAutoUpdate } from './utils/handleAutoUpdate.js';"
     if builtins.hasAttr manifest.meta.licenseSpdx licenseMap
     then licenseMap.${manifest.meta.licenseSpdx}
     else lib.licenses.unfree;
+  bunCompileTarget =
+    {
+      "x86_64-linux" = "bun-linux-x64";
+      "aarch64-linux" = "bun-linux-arm64";
+      "x86_64-darwin" = "bun-darwin-x64";
+      "aarch64-darwin" = "bun-darwin-arm64";
+    }.${stdenv.hostPlatform.system}
+      or (throw "unsupported Bun compile target for ${stdenv.hostPlatform.system}");
   aliasSpecs = map (
     alias:
     if builtins.isString alias then
@@ -196,7 +205,7 @@ EOF
       cp -rL bundle "$out/share/${manifest.package.repo}/bundle"
       ${lib.getExe' bun "bun"} build \
         --compile \
-        --target=bun \
+        --target=${bunCompileTarget} \
         --format=esm \
         --bytecode \
         --minify \
