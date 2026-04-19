@@ -1,10 +1,11 @@
 {
   bash,
+  buildNpmPackage,
   bun,
-  bun2nix,
   gemini-cli-src,
+  git,
   lib,
-  makeWrapper,
+  npmDepsHash,
   perl,
   runCommand,
   symlinkJoin,
@@ -67,6 +68,10 @@ let
 import { handleAutoUpdate } from './utils/handleAutoUpdate.js';"
     replace_if_present "$interactive_cli" "$old" ""
 
+    old="  debugLogger,
+"
+    replace_if_present "$interactive_cli" "$old" ""
+
     old="  checkForUpdates(settings)
     .then((info) => {
       handleAutoUpdate(info, settings, config.getProjectRoot());
@@ -81,7 +86,7 @@ import { handleAutoUpdate } from './utils/handleAutoUpdate.js';"
     replace_if_present "$interactive_cli" "$old" ""
 
     old="const [bannerVisible, setBannerVisible] = useState(true);"
-    new="const [bannerVisible] = useState(false);"
+    new="const [bannerVisible, setBannerVisible] = useState(false);"
     replace_if_present "$app_container" "$old" "$new"
 
     old="        setBannerVisible(true);"
@@ -166,26 +171,42 @@ EOF
     path = ../.;
   };
   sourceTree = runCommand "gemini-cli-packaging-source" { nativeBuildInputs = [ perl ]; } ''
+    staging="$(mktemp -d)"
+    cp -a ${cleanPackagingSource}/. "$staging/"
+    chmod -R u+w "$staging"
+    mkdir -p "$staging/vendor"
+    cp -a ${gemini-cli-src}/. "$staging/vendor/gemini-cli"
+    chmod -R u+w "$staging/vendor/gemini-cli"
+    ${lib.getExe bash} ${applyDownstreamPatches} "$staging/vendor/gemini-cli"
     mkdir -p "$out"
-    cp -a ${cleanPackagingSource}/. "$out/"
-    chmod -R u+w "$out"
-    mkdir -p "$out/vendor"
-    cp -a ${gemini-cli-src}/. "$out/vendor/gemini-cli"
-    ${lib.getExe bash} ${applyDownstreamPatches} "$out/vendor/gemini-cli"
+    cp -a "$staging"/. "$out/"
   '';
-  basePackage = bun2nix.writeBunApplication {
+  basePackage = buildNpmPackage {
     pname = manifest.package.repo;
     version = packageVersion;
-    packageJson = "${sourceTree}/package.json";
-    src = sourceTree;
-    dontUseBunBuild = true;
-    dontUseBunCheck = true;
-    startScript = ''
-      bunx ${manifest.package.repo} "$@"
+    src = "${sourceTree}/vendor/gemini-cli";
+    inherit npmDepsHash;
+    npmDepsFetcherVersion = 2;
+    npmInstallFlags = [ "--omit=optional" ];
+    npmBuildScript = "bundle";
+    nativeBuildInputs = [ bun git ];
+    installPhase = ''
+      runHook preInstall
+      mkdir -p "$out/bin" "$out/share/${manifest.package.repo}"
+      cp -rL bundle "$out/share/${manifest.package.repo}/bundle"
+      ${lib.getExe' bun "bun"} build \
+        --compile \
+        --target=bun \
+        --format=esm \
+        --bytecode \
+        --minify \
+        --production \
+        --external=keytar \
+        --external=@github/keytar \
+        --outfile "$out/bin/${manifest.binary.name}" \
+        bundle/gemini.js
+      runHook postInstall
     '';
-    bunDeps = bun2nix.fetchBunDeps {
-      bunNix = "${sourceTree}/bun.nix";
-    };
     meta = with lib; {
       description = manifest.meta.description;
       homepage = manifest.meta.homepage;
@@ -201,17 +222,7 @@ symlinkJoin {
   name = "${manifest.binary.name}-${packageVersion}";
   outputs = [ "out" ] ++ map (alias: alias.name) aliasSpecs;
   paths = [ basePackage ];
-  nativeBuildInputs = [ makeWrapper ];
   postBuild = ''
-    rm -rf "$out/bin"
-    mkdir -p "$out/bin"
-    entrypoint="$(find "${basePackage}/share/${manifest.package.repo}/node_modules" -path "*/node_modules/${manifest.package.npmName}/${manifest.binary.entrypoint}" | head -n 1)"
-    cat > "$out/bin/${manifest.binary.name}" <<EOF
-#!${lib.getExe bash}
-export GEMINI_FORCE_FILE_STORAGE=true
-exec ${lib.getExe' bun "bun"} "$entrypoint" "\$@"
-EOF
-    chmod +x "$out/bin/${manifest.binary.name}"
     ${aliasOutputLinks}
   '';
   meta = basePackage.meta;
