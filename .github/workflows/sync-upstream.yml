@@ -1,0 +1,47 @@
+name: Sync Upstream
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 3 * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  sync-upstream:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: DeterminateSystems/nix-installer-action@main
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.10
+
+      - name: Sync tracked upstream refs
+        run: ./scripts/update-upstream.sh
+
+      - name: Commit sync
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          if git diff --quiet -- \
+            README.md \
+            flake.lock \
+            flake.nix \
+            nix/package-manifest.json; then
+            exit 0
+          fi
+
+          git add \
+            README.md \
+            flake.lock \
+            flake.nix \
+            nix/package-manifest.json
+          git commit -m "chore: sync with upstream"
+          git push
