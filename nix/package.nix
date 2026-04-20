@@ -35,6 +35,7 @@ let
     app_container="$1/packages/cli/src/ui/AppContainer.tsx"
     shell_service="$1/packages/core/src/services/shellExecutionService.ts"
     shell_service_test="$1/packages/core/src/services/shellExecutionService.test.ts"
+    core_policy_config="$1/packages/core/src/policy/config.ts"
 
     old="label: 'Enable Auto Update',
         category: 'General',
@@ -134,6 +135,10 @@ import { handleAutoUpdate } from './utils/handleAutoUpdate.js';"
 
     it('should re-throw other errors during resize', async () => {"
     replace_if_present "$shell_service_test" "$old" "$new"
+
+    old="export const DEFAULT_CORE_POLICIES_DIR = path.join(__dirname, 'policies');"
+    new="export const DEFAULT_CORE_POLICIES_DIR = process.env['GEMINI_POLICIES_DIR'] ?? path.join(__dirname, 'policies');"
+    replace_if_present "$core_policy_config" "$old" "$new"
   '';
   licenseMap = {
     "MIT" = lib.licenses.mit;
@@ -216,7 +221,8 @@ EOF
         --outfile "$out/share/${manifest.package.repo}/${manifest.binary.name}" \
         bundle/gemini.js
       wrapProgram "$out/share/${manifest.package.repo}/${manifest.binary.name}" \
-        --set GEMINI_CLI_NO_RELAUNCH "true"
+        --set GEMINI_CLI_NO_RELAUNCH "true" \
+        --set GEMINI_POLICIES_DIR "$out/share/${manifest.package.repo}/bundle/policies"
       ln -s "$out/share/${manifest.package.repo}/${manifest.binary.name}" "$out/bin/${manifest.binary.name}"
       runHook postInstall
     '';
