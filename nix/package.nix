@@ -5,6 +5,7 @@
   gemini-cli-src,
   git,
   lib,
+  makeWrapper,
   npmDepsHash,
   perl,
   runCommand,
@@ -198,7 +199,7 @@ EOF
     npmDepsFetcherVersion = 2;
     npmInstallFlags = [ "--omit=optional" ];
     npmBuildScript = "bundle";
-    nativeBuildInputs = [ bun git ];
+    nativeBuildInputs = [ bun git makeWrapper ];
     installPhase = ''
       runHook preInstall
       mkdir -p "$out/bin" "$out/share/${manifest.package.repo}"
@@ -212,8 +213,11 @@ EOF
         --production \
         --external=keytar \
         --external=@github/keytar \
-        --outfile "$out/bin/${manifest.binary.name}" \
+        --outfile "$out/share/${manifest.package.repo}/${manifest.binary.name}" \
         bundle/gemini.js
+      wrapProgram "$out/share/${manifest.package.repo}/${manifest.binary.name}" \
+        --set GEMINI_CLI_NO_RELAUNCH "true"
+      ln -s "$out/share/${manifest.package.repo}/${manifest.binary.name}" "$out/bin/${manifest.binary.name}"
       runHook postInstall
     '';
     meta = with lib; {
