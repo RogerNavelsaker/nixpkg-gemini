@@ -48,19 +48,15 @@
       packages = forAllSystems ({ pkgs }: {
         default = pkgs.callPackage ./nix/package.nix {
           gemini-cli-src = gemini-cli-stable-src;
-          npmDepsHash = "sha256-hd8ozYOmyHTVqn3BEWcqfbrMD4DrjtJWu0VG5pK/hb4=";
         };
         main = pkgs.callPackage ./nix/package.nix {
           gemini-cli-src = gemini-cli-main-src;
-          npmDepsHash = "sha256-1Wp107ozH0CZuDrJLlaozZAotJ41xoIvp4OS6NKGFn0=";
         };
         nightly = pkgs.callPackage ./nix/package.nix {
           gemini-cli-src = gemini-cli-nightly-src;
-          npmDepsHash = "sha256-M1NKu9c1EE7W9S2jObM6r5k81GqjN7IxWAlfGGz2dHI=";
         };
         stable = pkgs.callPackage ./nix/package.nix {
           gemini-cli-src = gemini-cli-stable-src;
-          npmDepsHash = "sha256-hd8ozYOmyHTVqn3BEWcqfbrMD4DrjtJWu0VG5pK/hb4=";
         };
       });
 
