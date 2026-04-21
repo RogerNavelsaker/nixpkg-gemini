@@ -142,8 +142,8 @@ import { handleAutoUpdate } from './utils/handleAutoUpdate.js';"
     old='export const DEFAULT_CORE_POLICIES_DIR = path.join(__dirname, "policies");'
     new='const envObj = process.env; export const DEFAULT_CORE_POLICIES_DIR = envObj["GEMINI_POLICIES_DIR"] || path.join(__dirname, "policies");'
     replace_if_present "$core_policy_config" "$old" "$new"
-    perl -0pi -e 's/path\.(join|resolve)\(__dirname,\s*(["'\''''])(?:\.\.\/)?policies\/?\2?,\s*(["'\''''])sandbox-default\.toml\3\)/path.$1(DEFAULT_CORE_POLICIES_DIR, "sandbox-default.toml")/g' "$core_policy_config"
-    perl -0pi -e 's/path\.(join|resolve)\(__dirname,\s*(["'\''''])(?:\.\.\/)?policies\/?sandbox-default\.toml\2\)/path.$1(DEFAULT_CORE_POLICIES_DIR, "sandbox-default.toml")/g' "$core_policy_config"
+    perl -0pi -e 's/path\.(join|resolve)\(__dirname,\s*([\x27\x22])(?:\.\.\/)?policies\/?\2?,\s*([\x27\x22])sandbox-default\.toml\3\)/path.$1(DEFAULT_CORE_POLICIES_DIR, "sandbox-default.toml")/g' "$core_policy_config"
+    perl -0pi -e 's/path\.(join|resolve)\(__dirname,\s*([\x27\x22])(?:\.\.\/)?policies\/?sandbox-default\.toml\2\)/path.$1(DEFAULT_CORE_POLICIES_DIR, "sandbox-default.toml")/g' "$core_policy_config"
   '';
 
   licenseMap = {
