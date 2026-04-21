@@ -137,7 +137,11 @@ import { handleAutoUpdate } from './utils/handleAutoUpdate.js';"
     replace_if_present "$shell_service_test" "$old" "$new"
 
     old="export const DEFAULT_CORE_POLICIES_DIR = path.join(__dirname, 'policies');"
-    new="export const DEFAULT_CORE_POLICIES_DIR = process.env['GEMINI_POLICIES_DIR'] ?? path.join(__dirname, 'policies');"
+    new="const envObj = process.env; export const DEFAULT_CORE_POLICIES_DIR = envObj['GEMINI_POLICIES_DIR'] || path.join(__dirname, 'policies');"
+    replace_if_present "$core_policy_config" "$old" "$new"
+
+    old='export const DEFAULT_CORE_POLICIES_DIR = path.join(__dirname, "policies");'
+    new='const envObj = process.env; export const DEFAULT_CORE_POLICIES_DIR = envObj["GEMINI_POLICIES_DIR"] || path.join(__dirname, "policies");'
     replace_if_present "$core_policy_config" "$old" "$new"
   '';
   licenseMap = {
@@ -207,6 +211,13 @@ EOF
     nativeBuildInputs = [ bun git makeWrapper ];
     installPhase = ''
       runHook preInstall
+      
+      # Strip max-old-space-size to prevent Bun from passing it as a positional argument
+      perl -pi -e 's/--(max-old-space-size|maxOldSpaceSize)[= ]?[0-9]*//g' bundle/gemini.js || true
+
+      # Patch policies fallback directly in the bundle to guarantee runtime resolution
+      perl -pi -e 's/(path\.join\(__dirname,\s*(["\x27])(?:\/)?policies\2\))/(process.env.GEMINI_POLICIES_DIR ?? $1)/g' bundle/gemini.js || true
+
       mkdir -p "$out/bin" "$out/share/${manifest.package.repo}"
       cp -rL bundle "$out/share/${manifest.package.repo}/bundle"
       ${lib.getExe' bun "bun"} build \
