@@ -1,13 +1,13 @@
 {
   bash,
   bun,
-  bun2nix,
+  buildNpmPackage,
   gemini-cli-src,
-  git,
+  npmDepsHash,
   lib,
   makeWrapper,
+  nodejs,
   perl,
-  runCommand,
   symlinkJoin,
 }:
 
@@ -17,7 +17,7 @@ let
   packageVersion =
     sourceCliPackage.version
     + lib.optionalString (manifest.package ? packageRevision) "-r${toString manifest.package.packageRevision}";
-  
+
   applyDownstreamPatches = builtins.toFile "apply-downstream-patches.sh" ''
     replace_if_present() {
       local file="$1"
@@ -182,54 +182,40 @@ EOF
     )
     aliasSpecs;
 
-  cleanPackagingSource = builtins.path {
-    name = "gemini-cli-packaging-src";
-    path = ../.;
-  };
-
-  sourceTree = runCommand "gemini-cli-packaging-source" { nativeBuildInputs = [ perl ]; } ''
-    staging="$(mktemp -d)"
-    cp -a ${cleanPackagingSource}/. "$staging/"
-    chmod -R u+w "$staging"
-    mkdir -p "$staging/vendor"
-    cp -a ${gemini-cli-src}/. "$staging/vendor/gemini-cli"
-    chmod -R u+w "$staging/vendor/gemini-cli"
-    ${lib.getExe bash} ${applyDownstreamPatches} "$staging/vendor/gemini-cli"
-    mkdir -p "$out"
-    cp -a "$staging"/. "$out/"
-  '';
-
-  basePackage = bun2nix.mkDerivation {
+  basePackage = buildNpmPackage {
     pname = manifest.package.repo;
     version = packageVersion;
-    src = "${sourceTree}/vendor/gemini-cli";
+    src = gemini-cli-src;
 
-    bunDeps = bun2nix.fetchBunDeps {
-      bunNix = "${sourceTree}/bun.nix";
-    };
+    inherit npmDepsHash;
 
-    nativeBuildInputs = [ makeWrapper ];
+    npmDepsFetcherVersion = 2;
 
-    bunCompileToBytecode = true;
-    
-    extraBunBuildFlags = [
-      "--format=esm"
-      "--production"
-      "--external=keytar"
-      "--external=@github/keytar"
-    ];
+    nativeBuildInputs = [ bash bun makeWrapper perl ];
 
-    preBuild = ''
-      bun run bundle
+    npmBuildScript = "bundle";
+    npmFlags = [ "--ignore-scripts" ];
+
+    postPatch = ''
+      ${lib.getExe bash} ${applyDownstreamPatches} "$PWD"
     '';
 
-    postInstall = ''
+    installPhase = ''
+      runHook preInstall
+
+      mkdir -p "$out/bin" "$out/share/${manifest.package.repo}/bundle"
+
+      bun build --compile --bytecode --format=esm bundle/gemini.js \
+        --outfile "$out/bin/${manifest.binary.name}"
+
+      cp -rL bundle/. "$out/share/${manifest.package.repo}/bundle/"
+
       wrapProgram "$out/bin/${manifest.binary.name}" \
         --set GEMINI_CLI_NO_RELAUNCH "true" \
-        --set GEMINI_POLICIES_DIR "$out/share/${manifest.package.repo}/bundle/policies"
-        
-      mkdir -p "$out/share/${manifest.package.repo}"
-      cp -rL bundle "$out/share/${manifest.package.repo}/bundle"
+        --set GEMINI_POLICIES_DIR "$out/share/${manifest.package.repo}/bundle/policies" \
+        --set NODE_PATH "$out/share/${manifest.package.repo}/bundle/node_modules"
+
+      runHook postInstall
     '';
 
     meta = with lib; {
