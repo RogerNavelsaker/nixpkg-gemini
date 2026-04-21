@@ -1,15 +1,13 @@
 {
   bash,
-  buildNpmPackage,
   bun,
+  bun2nix,
   gemini-cli-src,
   git,
   lib,
   makeWrapper,
-  npmDepsHash,
   perl,
   runCommand,
-  stdenv,
   symlinkJoin,
 }:
 
@@ -19,6 +17,7 @@ let
   packageVersion =
     sourceCliPackage.version
     + lib.optionalString (manifest.package ? packageRevision) "-r${toString manifest.package.packageRevision}";
+  
   applyDownstreamPatches = builtins.toFile "apply-downstream-patches.sh" ''
     replace_if_present() {
       local file="$1"
@@ -144,23 +143,18 @@ import { handleAutoUpdate } from './utils/handleAutoUpdate.js';"
     new='const envObj = process.env; export const DEFAULT_CORE_POLICIES_DIR = envObj["GEMINI_POLICIES_DIR"] || path.join(__dirname, "policies");'
     replace_if_present "$core_policy_config" "$old" "$new"
   '';
+
   licenseMap = {
     "MIT" = lib.licenses.mit;
     "Apache-2.0" = lib.licenses.asl20;
     "SEE LICENSE IN README.md" = lib.licenses.unfree;
   };
+
   resolvedLicense =
     if builtins.hasAttr manifest.meta.licenseSpdx licenseMap
     then licenseMap.${manifest.meta.licenseSpdx}
     else lib.licenses.unfree;
-  bunCompileTarget =
-    {
-      "x86_64-linux" = "bun-linux-x64";
-      "aarch64-linux" = "bun-linux-arm64";
-      "x86_64-darwin" = "bun-darwin-x64";
-      "aarch64-darwin" = "bun-darwin-arm64";
-    }.${stdenv.hostPlatform.system}
-      or (throw "unsupported Bun compile target for ${stdenv.hostPlatform.system}");
+
   aliasSpecs = map (
     alias:
     if builtins.isString alias then
@@ -171,7 +165,9 @@ import { handleAutoUpdate } from './utils/handleAutoUpdate.js';"
     else
       alias
   ) (manifest.binary.aliases or [ ]);
+
   renderAliasArgs = args: lib.concatMapStringsSep " " lib.escapeShellArg args;
+
   aliasOutputLinks = lib.concatMapStrings
     (
       alias:
@@ -185,10 +181,12 @@ EOF
       ''
     )
     aliasSpecs;
+
   cleanPackagingSource = builtins.path {
     name = "gemini-cli-packaging-src";
     path = ../.;
   };
+
   sourceTree = runCommand "gemini-cli-packaging-source" { nativeBuildInputs = [ perl ]; } ''
     staging="$(mktemp -d)"
     cp -a ${cleanPackagingSource}/. "$staging/"
@@ -200,51 +198,48 @@ EOF
     mkdir -p "$out"
     cp -a "$staging"/. "$out/"
   '';
-  basePackage = buildNpmPackage {
+
+  basePackage = bun2nix.mkDerivation {
     pname = manifest.package.repo;
     version = packageVersion;
     src = "${sourceTree}/vendor/gemini-cli";
-    inherit npmDepsHash;
-    npmDepsFetcherVersion = 2;
-    npmInstallFlags = [ "--omit=optional" ];
-    npmBuildScript = "bundle";
-    nativeBuildInputs = [ bun git makeWrapper ];
-    installPhase = ''
-      runHook preInstall
-      
-      # Strip max-old-space-size to prevent Bun from passing it as a positional argument
-      perl -pi -e 's/--(max-old-space-size|maxOldSpaceSize)[= ]?[0-9]*//g' bundle/gemini.js || true
 
-      # Patch policies fallback directly in the bundle to guarantee runtime resolution
-      perl -pi -e 's/(path\.join\(__dirname,\s*(["\x27])(?:\/)?policies\2\))/(process.env.GEMINI_POLICIES_DIR ?? $1)/g' bundle/gemini.js || true
+    bunDeps = bun2nix.fetchBunDeps {
+      bunNix = "${sourceTree}/bun.nix";
+    };
 
-      mkdir -p "$out/bin" "$out/share/${manifest.package.repo}"
-      cp -rL bundle "$out/share/${manifest.package.repo}/bundle"
-      ${lib.getExe' bun "bun"} build \
-        --compile \
-        --target=${bunCompileTarget} \
-        --format=esm \
-        --bytecode \
-        --minify \
-        --production \
-        --external=keytar \
-        --external=@github/keytar \
-        --outfile "$out/share/${manifest.package.repo}/${manifest.binary.name}" \
-        bundle/gemini.js
-      wrapProgram "$out/share/${manifest.package.repo}/${manifest.binary.name}" \
+    nativeBuildInputs = [ makeWrapper ];
+
+    bunCompileToBytecode = true;
+    
+    extraBunBuildFlags = [
+      "--format=esm"
+      "--production"
+      "--external=keytar"
+      "--external=@github/keytar"
+    ];
+
+    preBuild = ''
+      bun run bundle
+    '';
+
+    postInstall = ''
+      wrapProgram "$out/bin/${manifest.binary.name}" \
         --set GEMINI_CLI_NO_RELAUNCH "true" \
         --set GEMINI_POLICIES_DIR "$out/share/${manifest.package.repo}/bundle/policies"
-      ln -s "$out/share/${manifest.package.repo}/${manifest.binary.name}" "$out/bin/${manifest.binary.name}"
-      runHook postInstall
+        
+      mkdir -p "$out/share/${manifest.package.repo}"
+      cp -rL bundle "$out/share/${manifest.package.repo}/bundle"
     '';
+
     meta = with lib; {
       description = manifest.meta.description;
       homepage = manifest.meta.homepage;
       license = resolvedLicense;
       mainProgram = manifest.binary.name;
-      platforms = platforms.linux ++ platforms.darwin;
     };
   };
+
 in
 symlinkJoin {
   pname = manifest.binary.name;
