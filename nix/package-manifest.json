@@ -13,7 +13,9 @@
       {
         "name": "gmi",
         "args": [
-          "--yolo"
+          "--yolo",
+          "--sandbox",
+          "false"
         ]
       }
     ]

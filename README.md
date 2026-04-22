@@ -7,7 +7,7 @@ Nix packaging for `google-gemini/gemini-cli` with a downstream patch set applied
 - Source repo: `google-gemini/gemini-cli`
 - Default pinned version: `v0.38.2`
 - Installed binary: `gemini`
-- Alias output: `gmi --yolo`
+- Alias output: `gmi --yolo --sandbox false`
 
 ### Tracking Branches
 
@@ -37,4 +37,4 @@ To use a specific tracking target, refer to `packages.<system>.stable`, `package
 
 - Runtime behavior patches now live in this repo and are applied during the build.
 - The default `out` output installs the longform binary name `gemini`.
-- The shortform wrapper `gmi --yolo` is available as a separate Nix output, not in the default `out` output.
+- The shortform wrapper `gmi --yolo --sandbox false` is available as a separate Nix output, not in the default `out` output.
