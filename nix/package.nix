@@ -6,7 +6,6 @@
   npmDepsHash,
   lib,
   makeWrapper,
-  nodejs,
   perl,
   symlinkJoin,
 }:
@@ -144,6 +143,42 @@ import { handleAutoUpdate } from './utils/handleAutoUpdate.js';"
     replace_if_present "$core_policy_config" "$old" "$new"
 
     find "$1/packages/core/src" -name "*.ts" -type f -exec perl -0pi -e 's/path\.(join|resolve)\([^\)]*sandbox-default\.toml[^\)]*\)/path.join(process.env.GEMINI_POLICIES_DIR || path.join(__dirname, "policies"), "sandbox-default.toml")/g' {} +
+
+    shell_tool_message="$1/packages/cli/src/ui/components/messages/ShellToolMessage.tsx"
+    retry_utils="$1/packages/core/src/utils/retry.ts"
+    error_classification="$1/packages/core/src/availability/errorClassification.ts"
+
+    old="if (!(e instanceof Error && e.message.includes('Cannot resize a pty that has already exited'))) {"
+    new="if (!(e instanceof Error && (e.message.includes('Cannot resize a pty that has already exited') || e.message.includes('EBADF') || e.code === 'EBADF' || e.code === 'ESRCH'))) {"
+    replace_if_present "$shell_tool_message" "$old" "$new"
+
+    old="export const DEFAULT_MAX_ATTEMPTS = 10;"
+    new="export const DEFAULT_MAX_ATTEMPTS = 1000;"
+    replace_if_present "$retry_utils" "$old" "$new"
+
+    old="initialDelayMs: 5000,"
+    new="initialDelayMs: 1000,"
+    replace_if_present "$retry_utils" "$old" "$new"
+
+    old="maxDelayMs: 30000,"
+    new="maxDelayMs: 5000,"
+    replace_if_present "$retry_utils" "$old" "$new"
+
+    old="if (error instanceof TerminalQuotaError) {
+    return 'terminal';
+  }"
+    new="if (error instanceof TerminalQuotaError) {
+    return 'retryable';
+  }"
+    replace_if_present "$error_classification" "$old" "$new"
+
+    old="default: 10,
+  description:
+    'Maximum number of attempts for requests to the main chat model. Cannot exceed 10.',"
+    new="default: 1000,
+  description:
+    'Maximum number of attempts for requests to the main chat model. Cannot exceed 1000.',"
+    replace_if_present "$settings_schema" "$old" "$new"
   '';
 
   licenseMap = {
@@ -191,6 +226,8 @@ EOF
 
     inherit npmDepsHash;
 
+    outputs = [ "out" "policies" ];
+
     npmDepsFetcherVersion = 2;
 
     nativeBuildInputs = [ bash bun makeWrapper perl ];
@@ -202,22 +239,44 @@ EOF
       ${lib.getExe bash} ${applyDownstreamPatches} "$PWD"
     '';
 
+    preBuild = ''
+      # Native PTY Resize Fix: belt-and-suspenders catch for EBADF in node-pty
+      find node_modules -name "unixTerminal.js" -exec perl -0pi -e 's/pty\.resize\(this\._fd, cols, rows\);/try { pty.resize(this._fd, cols, rows); } catch (e) { if (e && (e.message?.includes("EBADF") || e.message?.includes("ESRCH") || e.code === "EBADF" || e.code === "ESRCH")) { return; } throw e; }/g' {} +
+    '';
+
     installPhase = ''
       runHook preInstall
 
       mkdir -p "$out/bin" "$out/share/${manifest.package.repo}/bundle"
+      mkdir -p "$policies/share/gemini-cli/policies"
 
       bun build --compile --bytecode --format=esm bundle/gemini.js \
         --outfile "$out/bin/${manifest.binary.name}"
 
       cp -rL bundle/. "$out/share/${manifest.package.repo}/bundle/"
+      cp -rL bundle/policies/. "$policies/share/gemini-cli/policies/"
+
+      # Remove duplicate policies and node_modules from out output
+      # Since we are using bun --compile, we don't need node_modules at runtime
+      rm -rf "$out/share/${manifest.package.repo}/bundle/policies"
+      rm -rf "$out/share/${manifest.package.repo}/bundle/node_modules"
+
+      # Create a node -> bun symlink in the out output to support any internal node calls
+      mkdir -p "$out/lib/bun-node-shim"
+      ln -s "${lib.getExe bun}" "$out/lib/bun-node-shim/node"
 
       wrapProgram "$out/bin/${manifest.binary.name}" \
         --set GEMINI_CLI_NO_RELAUNCH "true" \
-        --set GEMINI_POLICIES_DIR "$out/share/${manifest.package.repo}/bundle/policies" \
-        --set NODE_PATH "$out/share/${manifest.package.repo}/bundle/node_modules"
+        --set GEMINI_POLICIES_DIR "$policies/share/gemini-cli/policies" \
+        --prefix PATH : "$out/lib/bun-node-shim"
 
       runHook postInstall
+    '';
+
+    preFixup = ''
+      # Closure Pruning: remove unnecessary source files and build artifacts
+      find "$out/share/${manifest.package.repo}/bundle" -name "*.ts" -type f -delete
+      find "$out/share/${manifest.package.repo}/bundle" -name "*.map" -type f -delete
     '';
 
     meta = with lib; {
@@ -233,9 +292,11 @@ symlinkJoin {
   pname = manifest.binary.name;
   version = packageVersion;
   name = "${manifest.binary.name}-${packageVersion}";
-  outputs = [ "out" ] ++ map (alias: alias.name) aliasSpecs;
-  paths = [ basePackage ];
+  outputs = [ "out" "policies" ] ++ map (alias: alias.name) aliasSpecs;
+  paths = [ basePackage basePackage.policies ];
   postBuild = ''
+    mkdir -p "$policies"
+    cp -rL "${basePackage.policies}/." "$policies/"
     ${aliasOutputLinks}
   '';
   meta = basePackage.meta;
