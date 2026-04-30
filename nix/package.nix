@@ -24,7 +24,7 @@ let
       local new="$3"
 
       if grep -Fq "$old" "$file"; then
-        OLD="$old" NEW="$new" perl -0pi -e 's/\Q$ENV{OLD}\E/$ENV{NEW}/gs' "$file"
+        OLD="$old" NEW="$new" ${perl}/bin/perl -0pi -e 's/\Q$ENV{OLD}\E/$ENV{NEW}/gs' "$file"
       fi
     }
 
@@ -142,7 +142,7 @@ import { handleAutoUpdate } from './utils/handleAutoUpdate.js';"
     new='const envObj = process.env; export const DEFAULT_CORE_POLICIES_DIR = envObj["GEMINI_POLICIES_DIR"] || path.join(__dirname, "policies");'
     replace_if_present "$core_policy_config" "$old" "$new"
 
-    find "$1/packages/core/src" -name "*.ts" -type f -exec perl -0pi -e 's/path\.(join|resolve)\([^\)]*sandbox-default\.toml[^\)]*\)/path.join(process.env.GEMINI_POLICIES_DIR || path.join(__dirname, "policies"), "sandbox-default.toml")/g' {} +
+    find "$1/packages/core/src" -name "*.ts" -type f -exec ${perl}/bin/perl -0pi -e 's/path\.(join|resolve)\([^\)]*sandbox-default\.toml[^\)]*\)/path.join(process.env.GEMINI_POLICIES_DIR || path.join(__dirname, "policies"), "sandbox-default.toml")/g' {} +
 
     shell_tool_message="$1/packages/cli/src/ui/components/messages/ShellToolMessage.tsx"
     retry_utils="$1/packages/core/src/utils/retry.ts"
