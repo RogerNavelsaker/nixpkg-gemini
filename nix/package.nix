@@ -17,7 +17,7 @@ let
     sourceCliPackage.version
     + lib.optionalString (manifest.package ? packageRevision) "-r${toString manifest.package.packageRevision}";
 
-  applyDownstreamPatches = builtins.toFile "apply-downstream-patches.sh" ''
+  applyDownstreamPatches = ''
     replace_if_present() {
       local file="$1"
       local old="$2"
@@ -28,12 +28,13 @@ let
       fi
     }
 
-    settings_schema="$1/packages/cli/src/config/settingsSchema.ts"
-    interactive_cli="$1/packages/cli/src/interactiveCli.tsx"
-    app_container="$1/packages/cli/src/ui/AppContainer.tsx"
-    shell_service="$1/packages/core/src/services/shellExecutionService.ts"
-    shell_service_test="$1/packages/core/src/services/shellExecutionService.test.ts"
-    core_policy_config="$1/packages/core/src/policy/config.ts"
+    ROOT="."
+    settings_schema="$ROOT/packages/cli/src/config/settingsSchema.ts"
+    interactive_cli="$ROOT/packages/cli/src/interactiveCli.tsx"
+    app_container="$ROOT/packages/cli/src/ui/AppContainer.tsx"
+    shell_service="$ROOT/packages/core/src/services/shellExecutionService.ts"
+    shell_service_test="$ROOT/packages/core/src/services/shellExecutionService.test.ts"
+    core_policy_config="$ROOT/packages/core/src/policy/config.ts"
 
     old="label: 'Enable Auto Update',
         category: 'General',
@@ -142,11 +143,11 @@ import { handleAutoUpdate } from './utils/handleAutoUpdate.js';"
     new='const envObj = process.env; export const DEFAULT_CORE_POLICIES_DIR = envObj["GEMINI_POLICIES_DIR"] || path.join(__dirname, "policies");'
     replace_if_present "$core_policy_config" "$old" "$new"
 
-    find "$1/packages/core/src" -name "*.ts" -type f -exec ${perl}/bin/perl -0pi -e 's/path\.(join|resolve)\([^\)]*sandbox-default\.toml[^\)]*\)/path.join(process.env.GEMINI_POLICIES_DIR || path.join(__dirname, "policies"), "sandbox-default.toml")/g' {} +
+    find "$ROOT/packages/core/src" -name "*.ts" -type f -exec ${perl}/bin/perl -0pi -e 's/path\.(join|resolve)\([^\)]*sandbox-default\.toml[^\)]*\)/path.join(process.env.GEMINI_POLICIES_DIR || path.join(__dirname, "policies"), "sandbox-default.toml")/g' {} +
 
-    shell_tool_message="$1/packages/cli/src/ui/components/messages/ShellToolMessage.tsx"
-    retry_utils="$1/packages/core/src/utils/retry.ts"
-    error_classification="$1/packages/core/src/availability/errorClassification.ts"
+    shell_tool_message="$ROOT/packages/cli/src/ui/components/messages/ShellToolMessage.tsx"
+    retry_utils="$ROOT/packages/core/src/utils/retry.ts"
+    error_classification="$ROOT/packages/core/src/availability/errorClassification.ts"
 
     old="if (!(e instanceof Error && e.message.includes('Cannot resize a pty that has already exited'))) {"
     new="if (!(e instanceof Error && (e.message.includes('Cannot resize a pty that has already exited') || e.message.includes('EBADF') || e.code === 'EBADF' || e.code === 'ESRCH'))) {"
@@ -236,7 +237,7 @@ EOF
     npmFlags = [ "--ignore-scripts" ];
 
     postPatch = ''
-      ${lib.getExe bash} ${applyDownstreamPatches} "$PWD"
+      ${applyDownstreamPatches}
     '';
 
     preBuild = ''
