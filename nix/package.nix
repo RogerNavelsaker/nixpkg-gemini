@@ -261,14 +261,14 @@ EOF
       rm -rf "$out/share/${manifest.package.repo}/bundle/policies"
       rm -rf "$out/share/${manifest.package.repo}/bundle/node_modules"
 
-      # Create a node -> bun symlink in the out output to support any internal node calls
-      mkdir -p "$out/lib/bun-node-shim"
-      ln -s "${lib.getExe bun}" "$out/lib/bun-node-shim/node"
+      # Create a node -> bun symlink in the libexec output to support any internal node calls
+      mkdir -p "$out/libexec/bin"
+      ln -s "${lib.getExe bun}" "$out/libexec/bin/node"
 
       wrapProgram "$out/bin/${manifest.binary.name}" \
         --set GEMINI_CLI_NO_RELAUNCH "true" \
         --set GEMINI_POLICIES_DIR "$policies/share/gemini-cli/policies" \
-        --prefix PATH : "$out/lib/bun-node-shim"
+        --prefix PATH : "$out/libexec/bin"
 
       runHook postInstall
     '';
