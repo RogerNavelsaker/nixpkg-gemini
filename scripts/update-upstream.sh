@@ -22,7 +22,7 @@ compute_npm_hash() {
 
   # Use lib.fakeHash to trigger hash computation with npmDepsFetcherVersion = 2
   local fake="sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
-  sed -i "s|${attr} = \"sha256-[^\"]*\";|${attr} = \"${fake}\";|" flake.nix
+  sed -i "s|${attr}[[:space:]]*= \"sha256-[^\"]*\";|${attr} = \"${fake}\";|" flake.nix
 
   local hash
   hash=$(nix --accept-flake-config build ".#${attr}" --no-link 2>&1 | grep -o "sha256-[a-zA-Z0-9+/=]\{43,\}" | grep -v "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=" | tail -n 1) || true
@@ -44,9 +44,9 @@ echo "nightly: $nightly_hash"
 
 # Write final hashes into flake.nix
 sed -i \
-  -e "s|stable = \"sha256-[^\"]*\";|stable = \"${stable_hash}\";|" \
-  -e "s|main   = \"sha256-[^\"]*\";|main   = \"${main_hash}\";|" \
-  -e "s|nightly = \"sha256-[^\"]*\";|nightly = \"${nightly_hash}\";|" \
+  -e "s|stable[[:space:]]*= \"sha256-[^\"]*\";|stable = \"${stable_hash}\";|" \
+  -e "s|main[[:space:]]*= \"sha256-[^\"]*\";|main = \"${main_hash}\";|" \
+  -e "s|nightly[[:space:]]*= \"sha256-[^\"]*\";|nightly = \"${nightly_hash}\";|" \
   flake.nix
 
 nix --accept-flake-config build .#stable --no-link
