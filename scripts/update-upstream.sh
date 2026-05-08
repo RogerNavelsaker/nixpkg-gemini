@@ -25,8 +25,7 @@ compute_npm_hash() {
   sed -i "s|${attr} = \"sha256-[^\"]*\";|${attr} = \"${fake}\";|" flake.nix
 
   local hash
-  hash=$(nix --accept-flake-config build ".#${attr}" --no-link 2>&1 | grep "got:" | grep -o "sha256-[^'\"[:space:]]*") || true
-
+  hash=$(nix --accept-flake-config build ".#${attr}" --no-link 2>&1 | grep -o "sha256-[a-zA-Z0-9+/=]\{43,\}" | grep -v "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=" | tail -n 1) || true
   if [[ -z "$hash" ]]; then
     echo "ERROR: failed to compute hash for ${attr}" >&2
     exit 1
