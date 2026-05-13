@@ -3,11 +3,11 @@
     "gemini-cli-main-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1778545727,
-        "narHash": "sha256-eR36Tuq7fx3Szpvt8BEkRXXg+m9JRUcRIHh7DS8sRds=",
+        "lastModified": 1778635992,
+        "narHash": "sha256-7HS60wqnmHXCB4FAryHdsFJkDmxFLcXlv/sC0lCfmvc=",
         "owner": "google-gemini",
         "repo": "gemini-cli",
-        "rev": "11a9edc808d8bbc40ac7cf4db0c3fe03e2bcdf4a",
+        "rev": "8cda688fe24de99a0add72d70ed54c19c2e9f5c0",
         "type": "github"
       },
       "original": {
@@ -20,16 +20,16 @@
     "gemini-cli-nightly-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1778519058,
-        "narHash": "sha256-HFcW4uIJA1bQquFs6IcbSl94TFa0iiNBci1jyA8Lv+s=",
+        "lastModified": 1778616667,
+        "narHash": "sha256-iP79a5OJCuA83TFkTwVWJVYA5b1LDx9a6eG6vr1cg4A=",
         "owner": "google-gemini",
         "repo": "gemini-cli",
-        "rev": "e257a28e2325241eaf2ceabeda807c091c94ca39",
+        "rev": "f54f63cd4c3ba46bd689081ff8e4a763e0301d4c",
         "type": "github"
       },
       "original": {
         "owner": "google-gemini",
-        "ref": "v0.42.0-nightly.20260511.g1a894c18e",
+        "ref": "v0.42.0-nightly.20260512.gc987b9939",
         "repo": "gemini-cli",
         "type": "github"
       }
@@ -37,16 +37,16 @@
     "gemini-cli-stable-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1778090184,
-        "narHash": "sha256-4jwEviWYzan97pVn0RWfWU4XS8c27L4ZJUwa2iGlFxY=",
+        "lastModified": 1778624834,
+        "narHash": "sha256-QYSzJdyjJ5SvPkI/uf/wu8MdM76W+djai6zD38IJpos=",
         "owner": "google-gemini",
         "repo": "gemini-cli",
-        "rev": "b0c7a1722afe458135a1770eee1f6c856d7ed59a",
+        "rev": "68e2196d5b487a8e477adff9ebe0b8116cead273",
         "type": "github"
       },
       "original": {
         "owner": "google-gemini",
-        "ref": "v0.41.2",
+        "ref": "v0.42.0",
         "repo": "gemini-cli",
         "type": "github"
       }
