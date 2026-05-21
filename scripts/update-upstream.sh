@@ -52,3 +52,29 @@ sed -i \
 nix --accept-flake-config build .#stable --no-link
 nix --accept-flake-config build .#main --no-link
 nix --accept-flake-config build .#nightly --no-link
+
+# Smoke test: bun --compile happily produces binaries with unresolved refs that
+# crash at startup (e.g. v0.42.0 ReferenceError: checkForUpdates is not defined).
+# Build success is necessary but not sufficient — exercise startInteractiveUI by
+# running the binary briefly and assert no critical error.
+smoke_test() {
+  local attr="$1"
+  local out
+  out=$(nix --accept-flake-config build ".#${attr}" --print-out-paths --no-link 2>/dev/null | head -n 1)
+  local bin="${out}/bin/gemini"
+  [ -x "$bin" ] || { echo "smoke[$attr]: binary missing at $bin" >&2; return 1; }
+  local log
+  log=$(mktemp)
+  # Run briefly under a fake TTY; timeout-kill is the expected exit.
+  script -qfc "timeout 5 ${bin} --yolo --sandbox false" "$log" </dev/null >/dev/null 2>&1 || true
+  if grep -qE "An unexpected critical error|ReferenceError|TypeError|ENOENT.*sandbox" "$log"; then
+    echo "smoke[$attr]: FAILED — startup crash detected" >&2
+    sed 's/\x1b\[[0-9;?]*[a-zA-Z]//g; s/\r//g' "$log" | grep -E "Error|critical" | head -20 >&2
+    return 1
+  fi
+  echo "smoke[$attr]: ok"
+}
+
+smoke_test stable
+smoke_test main
+smoke_test nightly
