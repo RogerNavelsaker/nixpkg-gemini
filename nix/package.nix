@@ -74,18 +74,8 @@ import { handleAutoUpdate } from './utils/handleAutoUpdate.js';"
 "
     replace_if_present "$interactive_cli" "$old" ""
 
-    old="  checkForUpdates(settings)
-    .then((info) => {
-      handleAutoUpdate(info, settings, config.getProjectRoot());
-    })
-    .catch((err) => {
-      // Silently ignore update check errors.
-      if (config.getDebugMode()) {
-        debugLogger.warn('Update check failed:', err);
-      }
-    });
-"
-    replace_if_present "$interactive_cli" "$old" ""
+    # Robust removal: match checkForUpdates(...).then(...).catch(...); block regardless of inner formatting
+    ${perl}/bin/perl -0pi -e 's/[ \t]*checkForUpdates\s*\([^)]*\)\s*\.then\s*\([\s\S]*?\}\s*\)\s*\.catch\s*\([\s\S]*?\}\s*\)\s*;\s*\n//g' "$interactive_cli"
 
     old="const [bannerVisible, setBannerVisible] = useState(true);"
     new="const [bannerVisible, setBannerVisible] = useState(false);"
@@ -143,7 +133,7 @@ import { handleAutoUpdate } from './utils/handleAutoUpdate.js';"
     new='const envObj = process.env; export const DEFAULT_CORE_POLICIES_DIR = envObj["GEMINI_POLICIES_DIR"] || path.join(__dirname, "policies");'
     replace_if_present "$core_policy_config" "$old" "$new"
 
-    find "$ROOT/packages/core/src" -name "*.ts" -type f -exec ${perl}/bin/perl -0pi -e 's/path\.(join|resolve)\([^\)]*sandbox-default\.toml[^\)]*\)/path.join(process.env.GEMINI_POLICIES_DIR || path.join(__dirname, "policies"), "sandbox-default.toml")/g' {} +
+    find "$ROOT/packages/core/src" -name "*.ts" -type f -exec ${perl}/bin/perl -0pi -e 's/path\.(join|resolve)\([^\)]*sandbox-default\.toml[^\)]*\)/path.join(process.env["GEMINI_POLICIES_DIR"] || path.join(__dirname, "policies"), "sandbox-default.toml")/g' {} +
 
     shell_tool_message="$ROOT/packages/cli/src/ui/components/messages/ShellToolMessage.tsx"
     retry_utils="$ROOT/packages/core/src/utils/retry.ts"
@@ -251,7 +241,9 @@ EOF
       mkdir -p "$out/bin" "$out/share/${manifest.package.repo}/bundle"
       mkdir -p "$policies/share/gemini-cli/policies"
 
-      bun build --compile --bytecode --format=esm bundle/gemini.js \
+      bun build --compile --bytecode --format=esm \
+        --external=keytar --external=@github/keytar \
+        bundle/gemini.js \
         --outfile "$out/bin/${manifest.binary.name}"
 
       cp -rL bundle/. "$out/share/${manifest.package.repo}/bundle/"
