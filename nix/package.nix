@@ -18,6 +18,7 @@ let
     + lib.optionalString (manifest.package ? packageRevision) "-r${toString manifest.package.packageRevision}";
 
   applyDownstreamPatches = ''
+    # Best-effort patch: warn on miss so silent upstream reformats are visible in build logs.
     replace_if_present() {
       local file="$1"
       local old="$2"
@@ -25,6 +26,19 @@ let
 
       if grep -Fq "$old" "$file"; then
         OLD="$old" NEW="$new" ${perl}/bin/perl -0pi -e 's/\Q$ENV{OLD}\E/$ENV{NEW}/gs' "$file"
+        return 0
+      fi
+      echo "[patch-miss optional] $file: $(printf %s "$old" | head -n1 | cut -c1-80)" >&2
+      return 0
+    }
+
+    # Hard requirement: at least one variant must apply, or build aborts.
+    require_any_applied() {
+      local file="$1"
+      local marker="$2"
+      if ! grep -Fq "$marker" "$file"; then
+        echo "[patch-miss REQUIRED] $file missing marker '$marker' after patching — upstream likely refactored. Aborting." >&2
+        exit 1
       fi
     }
 
@@ -132,6 +146,10 @@ import { handleAutoUpdate } from './utils/handleAutoUpdate.js';"
     old='export const DEFAULT_CORE_POLICIES_DIR = path.join(__dirname, "policies");'
     new='const envObj = process.env; export const DEFAULT_CORE_POLICIES_DIR = envObj["GEMINI_POLICIES_DIR"] || path.join(__dirname, "policies");'
     replace_if_present "$core_policy_config" "$old" "$new"
+
+    # Policy patches above (single- or double-quote variant) are load-bearing — sandbox crashes
+    # at runtime if neither applied. Assert at least one rewrote the file.
+    require_any_applied "$core_policy_config" "GEMINI_POLICIES_DIR"
 
     find "$ROOT/packages/core/src" -name "*.ts" -type f -exec ${perl}/bin/perl -0pi -e 's/path\.(join|resolve)\([^\)]*sandbox-default\.toml[^\)]*\)/path.join(process.env["GEMINI_POLICIES_DIR"] || path.join(__dirname, "policies"), "sandbox-default.toml")/g' {} +
 
