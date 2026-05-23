@@ -3,11 +3,11 @@
     "gemini-cli-main-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1779431632,
-        "narHash": "sha256-sPKm0a68XeitXQD3+V4t9wpfC/z1z1IXU17VqJLV/Dg=",
+        "lastModified": 1779488792,
+        "narHash": "sha256-7xst2fKJVb7TCsFrwes5R6cbtnTSko89fYESln0qgyE=",
         "owner": "google-gemini",
         "repo": "gemini-cli",
-        "rev": "ba04e99bea6aec57017e7d57ddd3e7415b5afad0",
+        "rev": "a00d03efc62de08274619cf7da96569ae51ecbf3",
         "type": "github"
       },
       "original": {
