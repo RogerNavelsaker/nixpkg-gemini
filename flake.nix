@@ -23,7 +23,7 @@
       flake = false;
     };
     gemini-cli-stable-src = {
-      url = "github:google-gemini/gemini-cli/v0.44.0";
+      url = "github:google-gemini/gemini-cli/v0.44.1";
       flake = false;
     };
   };
@@ -41,7 +41,7 @@
       });
 
       npmDepsHashes = {
-        stable = "sha256-/AQ0FapaqZp5F7d42bYQ44X6rZtp4ARrZDmYvRm/L9k=";
+        stable = "sha256-K3LHWLkIl1J7ACHn0mHUI4ipEJVkLu36W3HIUFgdKj4=";
         main = "sha256-yysWp0Bi45Oofzvf4lLex1zcpg12c0CmwD2HXxxej94=";
         nightly = "sha256-qeGfwifwag9Fh/ZEjZsA+2ukLuQ79YYL/uBstUZNjI8=";
       };

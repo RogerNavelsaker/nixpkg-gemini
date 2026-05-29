@@ -3,11 +3,11 @@
     "gemini-cli-main-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1779901380,
-        "narHash": "sha256-Fgiry0BEMtXVI94FgiqNgf3dnCUUsC5kYycQTldP9lA=",
+        "lastModified": 1779990259,
+        "narHash": "sha256-PpvFDR+TZ7IUeZSINVQ1fkdQz1JZWbuyQcJgXEcNb1U=",
         "owner": "google-gemini",
         "repo": "gemini-cli",
-        "rev": "5cac7c10fa9ff34e99553057631727c95c1e99f8",
+        "rev": "c82e2b5976745229093d5d27b8f80d784bc4594c",
         "type": "github"
       },
       "original": {
@@ -37,16 +37,16 @@
     "gemini-cli-stable-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1779915853,
-        "narHash": "sha256-+DoYL1+bmA3iRL/wa98gaN/CckYsx83TPCuTGoxrKeM=",
+        "lastModified": 1779991854,
+        "narHash": "sha256-FizxmHWOomlnWZoCK2lOLc94RjNTQM33vN16nLXsJI0=",
         "owner": "google-gemini",
         "repo": "gemini-cli",
-        "rev": "1000b33d4caf462b8f34063c8669ebc2ce59dce2",
+        "rev": "b9b7416f861c1b10efc39c477dbe66ed8f2155a5",
         "type": "github"
       },
       "original": {
         "owner": "google-gemini",
-        "ref": "v0.44.0",
+        "ref": "v0.44.1",
         "repo": "gemini-cli",
         "type": "github"
       }
