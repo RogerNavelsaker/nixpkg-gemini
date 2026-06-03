@@ -3,7 +3,7 @@
   "package": {
     "repo": "gemini-cli",
     "npmName": "@google/gemini-cli",
-    "version": "0.44.1"
+    "version": "0.45.0"
   },
   "binary": {
     "name": "gemini",
