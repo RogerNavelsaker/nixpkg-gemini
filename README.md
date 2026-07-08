@@ -5,15 +5,15 @@ Nix packaging for `google-gemini/gemini-cli` with a downstream patch set applied
 ## Package
 
 - Source repo: `google-gemini/gemini-cli`
-- Default pinned version: `v0.49.0`
+- Default pinned version: `v0.50.0`
 - Installed binary: `gemini`
 - Alias output: `gmi --yolo --sandbox false`
 
 ### Tracking Branches
 
 Downstream flakes can choose to follow specific upstream refs:
-- **Release (default):** Uses `google-gemini/gemini-cli@v0.49.0` and exposes `packages.default`.
-- **Stable tag (`v0.49.0`):** Uses the `gemini-cli-stable-src` input and exposes `packages.stable`.
+- **Release (default):** Uses `google-gemini/gemini-cli@v0.50.0` and exposes `packages.default`.
+- **Stable tag (`v0.50.0`):** Uses the `gemini-cli-stable-src` input and exposes `packages.stable`.
 - **Main:** Uses `google-gemini/gemini-cli@main` and exposes `packages.main`.
 - **Nightly:** Uses `google-gemini/gemini-cli@v0.51.0-nightly.20260707.g15a9429b6` and exposes `packages.nightly`.
 
