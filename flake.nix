@@ -23,7 +23,7 @@
       flake = false;
     };
     gemini-cli-stable-src = {
-      url = "github:google-gemini/gemini-cli/v0.55.1";
+      url = "github:google-gemini/gemini-cli/v0.54.4";
       flake = false;
     };
   };
