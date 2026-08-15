@@ -15,7 +15,7 @@ Downstream flakes can choose to follow specific upstream refs:
 - **Release (default):** Uses `google-gemini/gemini-cli@v0.55.1` and exposes `packages.default`.
 - **Stable tag (`v0.55.1`):** Uses the `gemini-cli-stable-src` input and exposes `packages.stable`.
 - **Main:** Uses `google-gemini/gemini-cli@main` and exposes `packages.main`.
-- **Nightly:** Uses `google-gemini/gemini-cli@v0.56.0-nightly.20260814.gc0d192452` and exposes `packages.nightly`.
+- **Nightly:** Uses `google-gemini/gemini-cli@v0.56.0-nightly.20260815.g2a87e7be1` and exposes `packages.nightly`.
 
 To use a specific tracking target, refer to `packages.<system>.stable`, `packages.<system>.main`, or `packages.<system>.nightly` in your flake.
 
