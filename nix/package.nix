@@ -201,8 +201,7 @@ EOF
     # protocol entries from the generated dependency expression.
     perl -0pi -e 's~^  "[^"]*\@npm:[^"]*" = fetchurl \{\n.*?^  \};\n~~mg' "$staging/bun.nix"
     # Keep the vendored package manifest consistent with the normalized lockfile.
-    perl -0pi -e 's/npm:\@jrichman\/ink\@6\.6\.9/6.6.9/g; s/npm:([\w.-]+\@[0-9][^" ]*)/$1/g' \
-      "$staging/vendor/gemini-cli/packages/cli/package.json"
+    find "$staging/vendor/gemini-cli" -name package.json -type f -exec perl -0pi -e 's/npm:\@jrichman\/ink\@6\.6\.9/6.6.9/g; s/npm:([\w.-]+\@[0-9][^" ]*)/$1/g' {} +
     ${lib.getExe bash} ${applyDownstreamPatches} "$staging/vendor/gemini-cli"
     mkdir -p "$out"
     cp -a "$staging"/. "$out/"
