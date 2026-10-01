@@ -18,6 +18,8 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    bun2nix.url = "github:nix-community/bun2nix";
+    bun2nix.inputs.nixpkgs.follows = "nixpkgs";
     gemini-cli-main-src = {
       url = "github:google-gemini/gemini-cli/main";
       flake = false;
@@ -32,7 +34,7 @@
     };
   };
 
-  outputs = { self, nixpkgs, gemini-cli-main-src, gemini-cli-nightly-src, gemini-cli-stable-src, ... }:
+  outputs = { self, nixpkgs, bun2nix, gemini-cli-main-src, gemini-cli-nightly-src, gemini-cli-stable-src, ... }:
     let
       systems = [
         "x86_64-linux"
@@ -41,7 +43,10 @@
         "aarch64-darwin"
       ];
       forAllSystems = f: nixpkgs.lib.genAttrs systems (system: f {
-        pkgs = import nixpkgs { inherit system; };
+        pkgs = import nixpkgs {
+          inherit system;
+          overlays = [ bun2nix.overlays.default ];
+        };
       });
 
       npmDepsHashes = {
