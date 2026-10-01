@@ -144,6 +144,10 @@
     url = "https://registry.npmjs.org/@jrichman/ink/-/ink-6.6.9.tgz";
     hash = "sha512-RL9sSiLQZECnjbmBwjIHOp8yVGdWF7C/uifg7ISv/e+F3nLNsfl7FdUFQs8iZARFMJAYxMFpxW6OW+HSt9drwQ==";
   };
+  "ink@npm:@jrichman/ink@6.6.9" = fetchurl {
+    url = "https://registry.npmjs.org/@jrichman/ink/-/ink-6.6.9.tgz";
+    hash = "sha512-RL9sSiLQZECnjbmBwjIHOp8yVGdWF7C/uifg7ISv/e+F3nLNsfl7FdUFQs8iZARFMJAYxMFpxW6OW+HSt9drwQ==";
+  };
   "@jridgewell/sourcemap-codec@1.6.0" = fetchurl {
     url = "https://registry.npmjs.org/@jridgewell/sourcemap-codec/-/sourcemap-codec-1.6.0.tgz";
     hash = "sha512-T7jf+5zgsZHwNJ4lvQ7/aezbyk0nNX+zJVWpmHA7VYsEx7a7qr5Rg5IbtJFqkgze5Y2sruq1RUY8Q837Od7iFw==";
