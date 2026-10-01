@@ -194,10 +194,9 @@ EOF
     # bun2nix cannot resolve npm: protocol aliases in Bun's lockfile. The
     # aliased packages are already represented by their normal package entries.
     perl -0pi -e 's/npm:\@jrichman\/ink\@6\.6\.9/6.6.9/g; s/npm:([\w.-]+\@[0-9][^" ]*)/$1/g' "$staging/bun.lock"
-    # Normalize the generated dependency map to match the normalized lockfile.
-    # Keep aliases that have no separate non-alias entry (for example
-    # ink-gradient), while removing the duplicate alias entries below.
-    perl -0pi -e 's/("[^"\n]+\@npm:)[^@"\n]+\@([0-9][^"\n]*)"/$1$2"/g' "$staging/bun.nix"
+    # Remove alias entries from the generated dependency map; the normalized
+    # lockfile resolves these dependencies through their normal entries.
+    perl -0pi -e 's{(?s)^  "[^"\n]*\@npm:[^"\n]*" = fetchurl \{.*?^  \};\n}{}gm' "$staging/bun.nix"
     mkdir -p "$staging/vendor"
     cp -a ${gemini-cli-src}/. "$staging/vendor/gemini-cli"
     chmod -R u+w "$staging/vendor/gemini-cli"
