@@ -6,7 +6,7 @@
 # or `pkgs.callPackage` if you wish to handle
 # it manually.
 #
-# Keep the generated dependency set as a complete Nix expression.
+# Keep the generated dependency set as a complete Nix expression; regenerate it with bun2nix.
 {
   copyPathToStore,
   fetchFromGitHub,
