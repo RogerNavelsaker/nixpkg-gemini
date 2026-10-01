@@ -850,10 +850,6 @@
     url = "https://registry.npmjs.org/fzf/-/fzf-0.5.2.tgz";
     hash = "sha512-Tt4kuxLXFKHy8KT40zwsUPUkg1CrsgY25FxA2U/j/0WgEDCk3ddc/zLTCCcbSHX9FcKtLuVaDGtGE/STWC+j3Q==";
   };
-  "fzf@npm:fzf@0.5.2" = fetchurl {
-    url = "https://registry.npmjs.org/fzf/-/fzf-0.5.2.tgz";
-    hash = "sha512-Tt4kuxLXFKHy8KT40zwsUPUkg1CrsgY25FxA2U/j/0WgEDCk3ddc/zLTCCcbSHX9FcKtLuVaDGtGE/STWC+j3Q==";
-  };
   "gaxios@7.3.1" = fetchurl {
     url = "https://registry.npmjs.org/gaxios/-/gaxios-7.3.1.tgz";
     hash = "sha512-kB3rzJV7d9juLZh8/56QTXCwQfxyhdOMdyYk1HdQKFtF8TJTDTZQJtixWIwXdE9Jji91mC41DUNpjleo4L4eAQ==";
