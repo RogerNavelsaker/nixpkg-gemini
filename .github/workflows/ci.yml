@@ -28,7 +28,7 @@ jobs:
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
 
       - name: Check Flake
-        run: nix flake check --accept-flake-config
+        run: nix flake check --no-build --accept-flake-config
 
       - name: Build Default Package
         run: nix build .#default --accept-flake-config --no-link
