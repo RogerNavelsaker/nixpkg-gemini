@@ -220,7 +220,7 @@ EOF
     ];
 
     preBuild = ''
-      bun run build
+      bun run bundle
     '';
 
     postInstall = ''
