@@ -5,6 +5,8 @@
 # Consume this with `fetchBunDeps` (recommended)
 # or `pkgs.callPackage` if you wish to handle
 # it manually.
+#
+# Keep the generated dependency set as a complete Nix expression.
 {
   copyPathToStore,
   fetchFromGitHub,
