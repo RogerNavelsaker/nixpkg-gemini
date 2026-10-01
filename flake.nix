@@ -29,7 +29,7 @@
       flake = false;
     };
     gemini-cli-stable-src = {
-      url = "github:google-gemini/gemini-cli/927170fcabbdb863dd3e74d6e3b0a93f1137b6da";
+      url = "github:google-gemini/gemini-cli/v0.62.0";
       flake = false;
     };
   };
