@@ -193,7 +193,7 @@ EOF
     chmod -R u+w "$staging"
     # bun2nix cannot resolve npm: protocol aliases in Bun's lockfile. The
     # aliased packages are already represented by their normal package entries.
-    perl -0pi -e 's/npm:\@jrichman\/ink\@6\.6\.9/6.6.9/g; s/npm:([\w.-]+\@[0-9][^" ]*)/$1/g' "$staging/bun.lock"
+    perl -0pi -e 's/ink\@npm:\@jrichman\/ink\@6\.6\.9/ink\@6.6.9/g; s/([\w.-]+)\@npm:\1\@([0-9][^", }\\]*)/$1\@$2/g; s/npm:([\w.-]+\@[0-9][^" ]*)/$1/g' "$staging/bun.lock"
     # Remove alias entries from the generated dependency map; the normalized
     # lockfile resolves aliases through the corresponding normal entries.
     perl -0pi -e 's{(?ms)^  "[^"\n]+\@npm:[^"\n]+" = fetchurl \{.*?^  \};\n}{}g' "$staging/bun.nix"
