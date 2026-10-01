@@ -196,7 +196,7 @@ EOF
     perl -0pi -e 's/npm:\@jrichman\/ink\@6\.6\.9/6.6.9/g; s/npm:[\w.-]+\@([0-9][^" ]*)/$1/g' "$staging/bun.lock"
     # Remove alias entries from the generated dependency map; the normalized
     # lockfile resolves these dependencies through their normal entries.
-    perl -0pi -e 's{  "[^"\n]*\@npm:[^"\n]*" = fetchurl \{\n    url = "[^"\n]*";\n    hash = "[^"\n]*";\n  \};\n{}g' "$staging/bun.nix"
+    perl -0pi -e 's~  "[^"\n]*\@npm:[^"\n]*" = fetchurl \{\n    url = "[^"\n]*";\n    hash = "[^"\n]*";\n  \};\n\}~~g' "$staging/bun.nix"
     mkdir -p "$staging/vendor"
     cp -a ${gemini-cli-src}/. "$staging/vendor/gemini-cli"
     chmod -R u+w "$staging/vendor/gemini-cli"
