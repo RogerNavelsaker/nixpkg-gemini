@@ -197,9 +197,8 @@ EOF
     # bun2nix's generated dependency map includes the npm-protocol aliases,
     # but Bun's offline installer cannot resolve those aliases in the lockfile.
     perl -0pi -e 's/npm:\@jrichman\/ink\@6\.6\.9/6.6.9/g; s/npm:[\w.-]+\@([0-9][^" ]*)/$1/g' "$staging/bun.lock"
-    # The lockfile is normalized below, so remove the corresponding npm:
-    # protocol entries from the generated dependency expression.
-    perl -0pi -e 's~^  "[^"]*\@npm:[^"]*" = fetchurl \{\n.*?^  \};\n~~mg' "$staging/bun.nix"
+    # Normalize the corresponding npm: protocol keys in the generated dependency expression.
+    perl -0pi -e 's/\@npm:[^" ]*\@([0-9][^" ]*)/\@$1/g' "$staging/bun.nix"
     # Keep the vendored package manifest consistent with the normalized lockfile.
     find "$staging/vendor/gemini-cli" -name package.json -type f -exec perl -0pi -e 's/npm:\@jrichman\/ink\@6\.6\.9/6.6.9/g; s/npm:([\w.-]+\@[0-9][^" ]*)/$1/g' {} +
     ${lib.getExe bash} ${applyDownstreamPatches} "$staging/vendor/gemini-cli"
