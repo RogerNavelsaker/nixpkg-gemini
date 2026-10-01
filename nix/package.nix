@@ -194,6 +194,12 @@ EOF
     mkdir -p "$staging/vendor"
     cp -a ${gemini-cli-src}/. "$staging/vendor/gemini-cli"
     chmod -R u+w "$staging/vendor/gemini-cli"
+    # bun2nix's generated dependency map includes the npm-protocol aliases,
+    # but Bun's offline installer cannot resolve those aliases in the lockfile.
+    perl -0pi -e 's/npm:\@jrichman\/ink\@6\.6\.9/6.6.9/g; s/npm:[\w.-]+\@([0-9][^" ]*)/$1/g' "$staging/bun.lock"
+    # Keep the vendored package manifest consistent with the normalized lockfile.
+    perl -0pi -e 's/npm:\@jrichman\/ink\@6\.6\.9/6.6.9/g; s/npm:([\w.-]+\@[0-9][^" ]*)/$1/g' \
+      "$staging/vendor/gemini-cli/packages/cli/package.json"
     ${lib.getExe bash} ${applyDownstreamPatches} "$staging/vendor/gemini-cli"
     mkdir -p "$out"
     cp -a "$staging"/. "$out/"
