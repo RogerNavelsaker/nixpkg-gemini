@@ -191,6 +191,9 @@ EOF
     staging="$(mktemp -d)"
     cp -a ${cleanPackagingSource}/. "$staging/"
     chmod -R u+w "$staging"
+    # bun2nix cannot resolve npm: protocol aliases in Bun's lockfile. The
+    # aliased packages are already represented by their normal package entries.
+    perl -0pi -e 's/npm:\@jrichman\/ink\@6\.6\.9/6.6.9/g; s/npm:([\w.-]+\@[0-9][^" ]*)/$1/g' "$staging/bun.lock"
     mkdir -p "$staging/vendor"
     cp -a ${gemini-cli-src}/. "$staging/vendor/gemini-cli"
     chmod -R u+w "$staging/vendor/gemini-cli"
