@@ -49,28 +49,19 @@
         };
       });
 
-      npmDepsHashes = {
-        stable = "sha256-RaWxvRqP+yxfKCSdkSFiVbdags+hfaNJxdFJzGlbio0=";
-        main = "sha256-DhQPqoXdr7tLEZMYvpzwnW2iKEecGm5P/0seOTe/qyA=";
-        nightly = "sha256-lBHNJq/lwzOa1+JvW+CU5G4vvBuZc8lWLOCeQnCKDko=";
-      };
     in {
       packages = forAllSystems ({ pkgs }: {
         default = pkgs.callPackage ./nix/package.nix {
           gemini-cli-src = gemini-cli-stable-src;
-          npmDepsHash = npmDepsHashes.stable;
         };
         main = pkgs.callPackage ./nix/package.nix {
           gemini-cli-src = gemini-cli-main-src;
-          npmDepsHash = npmDepsHashes.main;
         };
         nightly = pkgs.callPackage ./nix/package.nix {
           gemini-cli-src = gemini-cli-nightly-src;
-          npmDepsHash = npmDepsHashes.nightly;
         };
         stable = pkgs.callPackage ./nix/package.nix {
           gemini-cli-src = gemini-cli-stable-src;
-          npmDepsHash = npmDepsHashes.stable;
         };
       });
 
