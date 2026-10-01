@@ -533,12 +533,12 @@
     url = "https://registry.npmjs.org/@google-cloud/storage/-/storage-7.19.0.tgz";
     hash = "sha512-n2FjE7NAOYyshogdc7KQOl/VZb4sneqPjWouSyia9CMDdMhRX5+RIbqalNmC7LOLzuLAN89VlF2HvG8na9G+zQ==";
   };
-  "@google/gemini-cli" = copyPathToStore ./vendor/gemini-cli/packages/cli;
-  "@google/gemini-cli-a2a-server" = copyPathToStore ./vendor/gemini-cli/packages/a2a-server;
-  "@google/gemini-cli-core" = copyPathToStore ./vendor/gemini-cli/packages/core;
-  "@google/gemini-cli-devtools" = copyPathToStore ./vendor/gemini-cli/packages/devtools;
-  "@google/gemini-cli-sdk" = copyPathToStore ./vendor/gemini-cli/packages/sdk;
-  "@google/gemini-cli-test-utils" = copyPathToStore ./vendor/gemini-cli/packages/test-utils;
+  "@google/gemini-cli" = copyPathToStore ./packages/cli;
+  "@google/gemini-cli-a2a-server" = copyPathToStore ./packages/a2a-server;
+  "@google/gemini-cli-core" = copyPathToStore ./packages/core;
+  "@google/gemini-cli-devtools" = copyPathToStore ./packages/devtools;
+  "@google/gemini-cli-sdk" = copyPathToStore ./packages/sdk;
+  "@google/gemini-cli-test-utils" = copyPathToStore ./packages/test-utils;
   "@google/genai@1.30.0" = fetchurl {
     url = "https://wombat-dressing-room.appspot.com/@google/genai/-/genai-1.30.0.tgz";
     hash = "sha512-3MRcgczBFbUat1wIlZoLJ0vCCfXgm7Qxjh59cZi2X08RgWLtm9hKOspzp7TOg1TV2e26/MLxR2GR5yD5GmBV2w==";
@@ -2904,7 +2904,7 @@
     url = "https://registry.npmjs.org/gcp-metadata/-/gcp-metadata-8.1.2.tgz";
     hash = "sha512-zV/5HKTfCeKWnxG0Dmrw51hEWFGfcF2xiXqcA3+J90WDuP0SvoiSO5ORvcBsifmx/FoIjgQN3oNOGaQ5PhLFkg==";
   };
-  "gemini-cli-vscode-ide-companion" = copyPathToStore ./vendor/gemini-cli/packages/vscode-ide-companion;
+  "gemini-cli-vscode-ide-companion" = copyPathToStore ./packages/vscode-ide-companion;
   "get-caller-file@2.0.5" = fetchurl {
     url = "https://registry.npmjs.org/get-caller-file/-/get-caller-file-2.0.5.tgz";
     hash = "sha512-DyFP3BM/3YHTQOCUL/w0OZHR0lpKeGrxotcHWcqNEdnltqFwXVfhEBQ94eIo34AfQpo0rGki4cyIiftY06h2Fg==";
