@@ -23,7 +23,7 @@
       flake = false;
     };
     gemini-cli-nightly-src = {
-      url = "github:google-gemini/gemini-cli/v0.64.0-nightly.20260930.g38700b4b3";
+      url = "github:google-gemini/gemini-cli/v0.64.0-nightly.20261001.gc6bccb7ec";
       flake = false;
     };
     gemini-cli-stable-src = {
