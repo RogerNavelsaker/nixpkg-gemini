@@ -195,7 +195,7 @@ EOF
     # aliased packages are already represented by their normal package entries.
     perl -0pi -e 's/npm:\@jrichman\/ink\@6\.6\.9/6.6.9/g; s/npm:([\w.-]+\@[0-9][^" ]*)/$1/g' "$staging/bun.lock"
     # Keep the generated dependency map in sync with the normalized lockfile.
-    perl -0pi -e 's/\n  "[^"]*\@npm:[^"]*" = fetchurl \{.*?\n  \};//gs' "$staging/bun.nix"
+    perl -0pi -e 's/("[^"\n]+\@npm:)[^@"\n]+\@([0-9][^"\n]*)"/$1$2"/g' "$staging/bun.nix"
     mkdir -p "$staging/vendor"
     cp -a ${gemini-cli-src}/. "$staging/vendor/gemini-cli"
     chmod -R u+w "$staging/vendor/gemini-cli"
