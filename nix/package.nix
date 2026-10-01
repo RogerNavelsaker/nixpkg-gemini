@@ -194,6 +194,7 @@ EOF
     mkdir -p "$staging/vendor"
     cp -a ${gemini-cli-src}/. "$staging/vendor/gemini-cli"
     chmod -R u+w "$staging/vendor/gemini-cli"
+    cp ${cleanPackagingSource}/bun.nix "$staging/vendor/gemini-cli/bun.nix"
     ${lib.getExe bash} ${applyDownstreamPatches} "$staging/vendor/gemini-cli"
     mkdir -p "$out"
     cp -a "$staging"/. "$out/"
@@ -205,7 +206,7 @@ EOF
     src = "${sourceTree}/vendor/gemini-cli";
 
     bunDeps = bun2nix.fetchBunDeps {
-      bunNix = "${sourceTree}/bun.nix";
+      bunNix = "${sourceTree}/vendor/gemini-cli/bun.nix";
     };
 
     nativeBuildInputs = [ makeWrapper ];
