@@ -198,7 +198,7 @@ EOF
     # but Bun's offline installer cannot resolve those aliases in the lockfile.
     perl -0pi -e 's/npm:\@jrichman\/ink\@6\.6\.9/6.6.9/g; s/npm:[\w.-]+\@([0-9][^" ]*)/$1/g' "$staging/bun.lock"
     # Remove npm-protocol aliases from bun2nix's map; canonical entries are already present.
-    perl -0pi -e 's/  "[^"]+\@npm:[^"]+" = fetchurl \{\n    url = "[^"]+";\n    hash = "[^"]+";\n  \};\n//g' "$staging/bun.nix"
+    perl -0pi -e 's/  "[^"]+\@npm:[^"]+" = fetchurl \{\n    url = "[^"]+";\n    hash = "[^"]+";\n  \};\n/\n/g' "$staging/bun.nix"
     # Keep the vendored package manifest consistent with the normalized lockfile.
     perl -0pi -e 's/npm:\@jrichman\/ink\@6\.6\.9/6.6.9/g; s/npm:([\w.-]+\@[0-9][^" ]*)/$1/g' \
       "$staging/vendor/gemini-cli/packages/cli/package.json"
