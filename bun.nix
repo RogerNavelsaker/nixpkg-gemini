@@ -1632,10 +1632,6 @@
     url = "https://registry.npmjs.org/tinygradient/-/tinygradient-1.1.5.tgz";
     hash = "sha512-8nIfc2vgQ4TeLnk2lFj4tRLvvJwEfQuabdsmvDdQPT0xlk9TaNtpGd6nNRxXoK6vQhN6RSzj+Cnp5tTQmpxmbw==";
   };
-  "tinygradient@npm:tinygradient@1.1.5" = fetchurl {
-    url = "https://registry.npmjs.org/tinygradient/-/tinygradient-1.1.5.tgz";
-    hash = "sha512-8nIfc2vgQ4TeLnk2lFj4tRLvvJwEfQuabdsmvDdQPT0xlk9TaNtpGd6nNRxXoK6vQhN6RSzj+Cnp5tTQmpxmbw==";
-  };
   "tinypool@1.1.1" = fetchurl {
     url = "https://registry.npmjs.org/tinypool/-/tinypool-1.1.1.tgz";
     hash = "sha512-Zba82s87IFq9A9XmjiX5uZA/ARWDrB03OHlq+Vw1fSdt0I+4/Kutwy8BP4Y/y/aORMo61FQ0vIb5j44vSo5Pkg==";
