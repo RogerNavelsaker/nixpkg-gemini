@@ -197,7 +197,6 @@ EOF
     # Normalize npm: aliases in the generated dependency map to the package
     # keys used by the normalized lockfile. Keep aliased packages: many of
     # them have no non-alias entry in bun.nix.
-    perl -0pi -e 's~  "\@jrichman/ink\@npm:\@jrichman/ink\@6\.6\.9" = fetchurl \{\n    url = "[^"\n]*";\n    hash = "[^"\n]*";\n  \};\n~~g; s~  "([^"\n]+)\@npm:[^"\n]+\@([^"\n]+)" = fetchurl~  "$1\@$2" = fetchurl~g' "$staging/bun.nix"
     mkdir -p "$staging/vendor"
     cp -a ${gemini-cli-src}/. "$staging/vendor/gemini-cli"
     chmod -R u+w "$staging/vendor/gemini-cli"
