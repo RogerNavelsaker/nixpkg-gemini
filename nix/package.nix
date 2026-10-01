@@ -205,7 +205,7 @@ EOF
     src = "${sourceTree}/vendor/gemini-cli";
 
     bunDeps = bun2nix.fetchBunDeps {
-      bunNix = "${sourceTree}/bun.nix";
+      bunNix = "${sourceTree}/vendor/gemini-cli/bun.nix";
     };
 
     nativeBuildInputs = [ makeWrapper ];
