@@ -5,17 +5,17 @@ Nix packaging for `google-gemini/gemini-cli` with a downstream patch set applied
 ## Package
 
 - Source repo: `google-gemini/gemini-cli`
-- Default pinned version: `v0.62.0`
+- Default pinned version: `v0.63.0`
 - Installed binary: `gemini`
 - Alias output: `gmi --yolo --sandbox false`
 
 ### Tracking Branches
 
 Downstream flakes can choose to follow specific upstream refs:
-- **Release (default):** Uses `google-gemini/gemini-cli@v0.62.0` and exposes `packages.default`.
-- **Stable tag (`v0.62.0`):** Uses the `gemini-cli-stable-src` input and exposes `packages.stable`.
+- **Release (default):** Uses `google-gemini/gemini-cli@v0.63.0` and exposes `packages.default`.
+- **Stable tag (`v0.63.0`):** Uses the `gemini-cli-stable-src` input and exposes `packages.stable`.
 - **Main:** Uses `google-gemini/gemini-cli@main` and exposes `packages.main`.
-- **Nightly:** Uses `google-gemini/gemini-cli@v0.64.0-nightly.20261006.gfb972b2f8` and exposes `packages.nightly`.
+- **Nightly:** Uses `google-gemini/gemini-cli@v0.65.0-nightly.20261007.gef59c532f` and exposes `packages.nightly`.
 
 To use a specific tracking target, refer to `packages.<system>.stable`, `packages.<system>.main`, or `packages.<system>.nightly` in your flake.
 
