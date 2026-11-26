@@ -14,6 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Install Nix
         uses: cachix/install-nix-action@v31
@@ -26,6 +28,11 @@ jobs:
         with:
           name: rogernavelsaker
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+
+      - name: Sync checks
+        env:
+          BASE_REF: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || '' }}
+        run: nix shell nixpkgs#jq -c bash scripts/check-sync.sh
 
       - name: Check Flake
         run: nix flake check --accept-flake-config
