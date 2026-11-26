@@ -45,9 +45,9 @@
       });
 
       npmDepsHashes = {
-        stable = "sha256-RaWxvRqP+yxfKCSdkSFiVbdags+hfaNJxdFJzGlbio0=";
+        stable = "sha256-tzdAkGmh06hYmLgFin/k0btrwvCFZTI6z9qL7Buo3Qk=";
         main = "sha256-DhQPqoXdr7tLEZMYvpzwnW2iKEecGm5P/0seOTe/qyA=";
-        nightly = "sha256-lBHNJq/lwzOa1+JvW+CU5G4vvBuZc8lWLOCeQnCKDko=";
+        nightly = "sha256-EOerPW6xzFurx9ZOMrkQzkYOcgKjaNrr+BBhRiNZwJE=";
       };
     in {
       packages = forAllSystems ({ pkgs }: {

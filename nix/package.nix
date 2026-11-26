@@ -1,13 +1,13 @@
 {
   bash,
   bun,
-  bun2nix,
+  buildNpmPackage,
   gemini-cli-src,
-  git,
+  jq,
+  npmDepsHash,
   lib,
   makeWrapper,
   perl,
-  runCommand,
   symlinkJoin,
 }:
 
@@ -17,24 +17,39 @@ let
   packageVersion =
     sourceCliPackage.version
     + lib.optionalString (manifest.package ? packageRevision) "-r${toString manifest.package.packageRevision}";
-  
-  applyDownstreamPatches = builtins.toFile "apply-downstream-patches.sh" ''
+
+  applyDownstreamPatches = ''
+    # Best-effort patch: warn on miss so silent upstream reformats are visible in build logs.
     replace_if_present() {
       local file="$1"
       local old="$2"
       local new="$3"
 
       if grep -Fq "$old" "$file"; then
-        OLD="$old" NEW="$new" perl -0pi -e 's/\Q$ENV{OLD}\E/$ENV{NEW}/gs' "$file"
+        OLD="$old" NEW="$new" ${perl}/bin/perl -0pi -e 's/\Q$ENV{OLD}\E/$ENV{NEW}/gs' "$file"
+        return 0
+      fi
+      echo "[patch-miss optional] $file: $(printf %s "$old" | head -n1 | cut -c1-80)" >&2
+      return 0
+    }
+
+    # Hard requirement: at least one variant must apply, or build aborts.
+    require_any_applied() {
+      local file="$1"
+      local marker="$2"
+      if ! grep -Fq "$marker" "$file"; then
+        echo "[patch-miss REQUIRED] $file missing marker '$marker' after patching — upstream likely refactored. Aborting." >&2
+        exit 1
       fi
     }
 
-    settings_schema="$1/packages/cli/src/config/settingsSchema.ts"
-    interactive_cli="$1/packages/cli/src/interactiveCli.tsx"
-    app_container="$1/packages/cli/src/ui/AppContainer.tsx"
-    shell_service="$1/packages/core/src/services/shellExecutionService.ts"
-    shell_service_test="$1/packages/core/src/services/shellExecutionService.test.ts"
-    core_policy_config="$1/packages/core/src/policy/config.ts"
+    ROOT="."
+    settings_schema="$ROOT/packages/cli/src/config/settingsSchema.ts"
+    interactive_cli="$ROOT/packages/cli/src/interactiveCli.tsx"
+    app_container="$ROOT/packages/cli/src/ui/AppContainer.tsx"
+    shell_service="$ROOT/packages/core/src/services/shellExecutionService.ts"
+    shell_service_test="$ROOT/packages/core/src/services/shellExecutionService.test.ts"
+    core_policy_config="$ROOT/packages/core/src/policy/config.ts"
 
     old="label: 'Enable Auto Update',
         category: 'General',
@@ -74,18 +89,8 @@ import { handleAutoUpdate } from './utils/handleAutoUpdate.js';"
 "
     replace_if_present "$interactive_cli" "$old" ""
 
-    old="  checkForUpdates(settings)
-    .then((info) => {
-      handleAutoUpdate(info, settings, config.getProjectRoot());
-    })
-    .catch((err) => {
-      // Silently ignore update check errors.
-      if (config.getDebugMode()) {
-        debugLogger.warn('Update check failed:', err);
-      }
-    });
-"
-    replace_if_present "$interactive_cli" "$old" ""
+    # Robust removal: match checkForUpdates(...).then(...).catch(...); block regardless of inner formatting
+    ${perl}/bin/perl -0pi -e 's/[ \t]*checkForUpdates\s*\([^)]*\)\s*\.then\s*\([\s\S]*?\}\s*\)\s*\.catch\s*\([\s\S]*?\}\s*\)\s*;\s*\n//g' "$interactive_cli"
 
     old="const [bannerVisible, setBannerVisible] = useState(true);"
     new="const [bannerVisible, setBannerVisible] = useState(false);"
@@ -142,6 +147,48 @@ import { handleAutoUpdate } from './utils/handleAutoUpdate.js';"
     old='export const DEFAULT_CORE_POLICIES_DIR = path.join(__dirname, "policies");'
     new='const envObj = process.env; export const DEFAULT_CORE_POLICIES_DIR = envObj["GEMINI_POLICIES_DIR"] || path.join(__dirname, "policies");'
     replace_if_present "$core_policy_config" "$old" "$new"
+
+    # Policy patches above (single- or double-quote variant) are load-bearing — sandbox crashes
+    # at runtime if neither applied. Assert at least one rewrote the file.
+    require_any_applied "$core_policy_config" "GEMINI_POLICIES_DIR"
+
+    find "$ROOT/packages/core/src" -name "*.ts" -type f -exec ${perl}/bin/perl -0pi -e 's/path\.(join|resolve)\([^\)]*sandbox-default\.toml[^\)]*\)/path.join(process.env["GEMINI_POLICIES_DIR"] || path.join(__dirname, "policies"), "sandbox-default.toml")/g' {} +
+
+    shell_tool_message="$ROOT/packages/cli/src/ui/components/messages/ShellToolMessage.tsx"
+    retry_utils="$ROOT/packages/core/src/utils/retry.ts"
+    error_classification="$ROOT/packages/core/src/availability/errorClassification.ts"
+
+    old="if (!(e instanceof Error && e.message.includes('Cannot resize a pty that has already exited'))) {"
+    new="if (!(e instanceof Error && (e.message.includes('Cannot resize a pty that has already exited') || e.message.includes('EBADF') || e.code === 'EBADF' || e.code === 'ESRCH'))) {"
+    replace_if_present "$shell_tool_message" "$old" "$new"
+
+    old="export const DEFAULT_MAX_ATTEMPTS = 10;"
+    new="export const DEFAULT_MAX_ATTEMPTS = 1000;"
+    replace_if_present "$retry_utils" "$old" "$new"
+
+    old="initialDelayMs: 5000,"
+    new="initialDelayMs: 1000,"
+    replace_if_present "$retry_utils" "$old" "$new"
+
+    old="maxDelayMs: 30000,"
+    new="maxDelayMs: 5000,"
+    replace_if_present "$retry_utils" "$old" "$new"
+
+    old="if (error instanceof TerminalQuotaError) {
+    return 'terminal';
+  }"
+    new="if (error instanceof TerminalQuotaError) {
+    return 'retryable';
+  }"
+    replace_if_present "$error_classification" "$old" "$new"
+
+    old="default: 10,
+  description:
+    'Maximum number of attempts for requests to the main chat model. Cannot exceed 10.',"
+    new="default: 1000,
+  description:
+    'Maximum number of attempts for requests to the main chat model. Cannot exceed 1000.',"
+    replace_if_present "$settings_schema" "$old" "$new"
   '';
 
   licenseMap = {
@@ -182,54 +229,85 @@ EOF
     )
     aliasSpecs;
 
-  cleanPackagingSource = builtins.path {
-    name = "gemini-cli-packaging-src";
-    path = ../.;
-  };
-
-  sourceTree = runCommand "gemini-cli-packaging-source" { nativeBuildInputs = [ perl ]; } ''
-    staging="$(mktemp -d)"
-    cp -a ${cleanPackagingSource}/. "$staging/"
-    chmod -R u+w "$staging"
-    mkdir -p "$staging/vendor"
-    cp -a ${gemini-cli-src}/. "$staging/vendor/gemini-cli"
-    chmod -R u+w "$staging/vendor/gemini-cli"
-    ${lib.getExe bash} ${applyDownstreamPatches} "$staging/vendor/gemini-cli"
-    mkdir -p "$out"
-    cp -a "$staging"/. "$out/"
-  '';
-
-  basePackage = bun2nix.mkDerivation {
+  basePackage = buildNpmPackage {
     pname = manifest.package.repo;
     version = packageVersion;
-    src = "${sourceTree}/vendor/gemini-cli";
+    src = gemini-cli-src;
 
-    bunDeps = bun2nix.fetchBunDeps {
-      bunNix = "${sourceTree}/bun.nix";
-    };
+    inherit npmDepsHash;
 
-    nativeBuildInputs = [ makeWrapper ];
+    outputs = [ "out" "policies" ];
 
-    bunCompileToBytecode = true;
-    
-    extraBunBuildFlags = [
-      "--format=esm"
-      "--production"
-      "--external=keytar"
-      "--external=@github/keytar"
-    ];
+    npmDepsFetcherVersion = 2;
 
-    preBuild = ''
-      bun run bundle
+    nativeBuildInputs = [ bash bun makeWrapper perl ];
+
+    npmBuildScript = "bundle";
+    npmFlags = [ "--ignore-scripts" ];
+
+    postPatch = ''
+      ${applyDownstreamPatches}
+
+      # Upstream package-lock.json can drift from packages/cli/package.json; npm ci then
+      # fails offline. Align the declared versions with the lock, then assert they match.
+      for pkg in packages/*/package.json; do
+        dir="$(dirname "$pkg")"
+        for dep in $(${lib.getExe jq} -r '(.dependencies // {}) | keys[]' "$pkg"); do
+          locked="$(${lib.getExe jq} -r --arg k "$dir/node_modules/$dep" '.packages[$k].version // empty' package-lock.json)"
+          declared="$(${lib.getExe jq} -r --arg d "$dep" '.dependencies[$d]' "$pkg")"
+          if [ -n "$locked" ] && [ "$declared" != "$locked" ] && [[ "$declared" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "[lock-drift] $pkg: $dep $declared -> $locked" >&2
+            ${lib.getExe jq} --arg d "$dep" --arg v "$locked" '.dependencies[$d] = $v' "$pkg" > "$pkg.tmp" && mv "$pkg.tmp" "$pkg"
+          fi
+          declared="$(${lib.getExe jq} -r --arg d "$dep" '.dependencies[$d]' "$pkg")"
+          if [ -n "$locked" ] && [[ "$declared" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] && [ "$declared" != "$locked" ]; then
+            echo "[lock-drift REQUIRED] $pkg: $dep declared $declared != locked $locked" >&2
+            exit 1
+          fi
+        done
+      done
     '';
 
-    postInstall = ''
+    preBuild = ''
+      # Native PTY Resize Fix: belt-and-suspenders catch for EBADF in node-pty
+      find node_modules -name "unixTerminal.js" -exec perl -0pi -e 's/pty\.resize\(this\._fd, cols, rows\);/try { pty.resize(this._fd, cols, rows); } catch (e) { if (e && (e.message?.includes("EBADF") || e.message?.includes("ESRCH") || e.code === "EBADF" || e.code === "ESRCH")) { return; } throw e; }/g' {} +
+    '';
+
+    installPhase = ''
+      runHook preInstall
+
+      mkdir -p "$out/bin" "$out/share/${manifest.package.repo}/bundle"
+      mkdir -p "$policies/share/gemini-cli/policies"
+
+      bun build --compile --bytecode --format=esm \
+        --external=keytar --external=@github/keytar \
+        bundle/gemini.js \
+        --outfile "$out/bin/${manifest.binary.name}"
+
+      cp -rL bundle/. "$out/share/${manifest.package.repo}/bundle/"
+      cp -rL bundle/policies/. "$policies/share/gemini-cli/policies/"
+
+      # Remove duplicate policies and node_modules from out output
+      # Since we are using bun --compile, we don't need node_modules at runtime
+      rm -rf "$out/share/${manifest.package.repo}/bundle/policies"
+      rm -rf "$out/share/${manifest.package.repo}/bundle/node_modules"
+
+      # Create a node -> bun symlink in the libexec output to support any internal node calls
+      mkdir -p "$out/libexec/bin"
+      ln -s "${lib.getExe bun}" "$out/libexec/bin/node"
+
       wrapProgram "$out/bin/${manifest.binary.name}" \
         --set GEMINI_CLI_NO_RELAUNCH "true" \
-        --set GEMINI_POLICIES_DIR "$out/share/${manifest.package.repo}/bundle/policies"
-        
-      mkdir -p "$out/share/${manifest.package.repo}"
-      cp -rL bundle "$out/share/${manifest.package.repo}/bundle"
+        --set GEMINI_POLICIES_DIR "$policies/share/gemini-cli/policies" \
+        --prefix PATH : "$out/libexec/bin"
+
+      runHook postInstall
+    '';
+
+    preFixup = ''
+      # Closure Pruning: remove unnecessary source files and build artifacts
+      find "$out/share/${manifest.package.repo}/bundle" -name "*.ts" -type f -delete
+      find "$out/share/${manifest.package.repo}/bundle" -name "*.map" -type f -delete
     '';
 
     meta = with lib; {
@@ -245,9 +323,11 @@ symlinkJoin {
   pname = manifest.binary.name;
   version = packageVersion;
   name = "${manifest.binary.name}-${packageVersion}";
-  outputs = [ "out" ] ++ map (alias: alias.name) aliasSpecs;
-  paths = [ basePackage ];
+  outputs = [ "out" "policies" ] ++ map (alias: alias.name) aliasSpecs;
+  paths = [ basePackage basePackage.policies ];
   postBuild = ''
+    mkdir -p "$policies"
+    cp -rL "${basePackage.policies}/." "$policies/"
     ${aliasOutputLinks}
   '';
   meta = basePackage.meta;
