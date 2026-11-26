@@ -172,3 +172,47 @@ console.log(
     2,
   ),
 );
+
+const fakeHash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+const hashVariants = ["stable", "main", "nightly"] as const;
+
+function run(cmd: string[]) {
+  const proc = Bun.spawnSync({ cmd, stdout: "pipe", stderr: "pipe" });
+  return {
+    exitCode: proc.exitCode,
+    output: new TextDecoder().decode(proc.stdout) + new TextDecoder().decode(proc.stderr),
+  };
+}
+
+const lock = run([
+  "nix", "flake", "update",
+  "gemini-cli-stable-src", "gemini-cli-main-src", "gemini-cli-nightly-src",
+  "--accept-flake-config",
+]);
+if (lock.exitCode !== 0) {
+  throw new Error(`failed to update gemini-cli source pins:\n${lock.output}`);
+}
+
+for (const variant of hashVariants) {
+  const pattern = new RegExp(`(${variant} = ")sha256-[^"]*(";)`);
+  const setHash = async (hash: string) => {
+    const text = await Bun.file(flakePath).text();
+    if (!pattern.test(text)) {
+      throw new Error(`npmDepsHashes.${variant} not found in ${flakePath}`);
+    }
+    await Bun.write(flakePath, text.replace(pattern, `$1${hash}$2`));
+  };
+
+  await setHash(fakeHash);
+  const build = run([
+    "nix", "build", `.#${variant}`, "--no-link", "--accept-flake-config",
+  ]);
+  const got = build.output.match(/got:\s+(sha256-[A-Za-z0-9+/]+=*)/)?.[1];
+  if (!got) {
+    throw new Error(
+      `could not determine npmDepsHash for ${variant}:\n${build.output.slice(-4000)}`,
+    );
+  }
+  await setHash(got);
+  console.log(`npmDepsHashes.${variant} = ${got}`);
+}
