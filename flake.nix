@@ -46,7 +46,7 @@
 
       npmDepsHashes = {
         stable = "sha256-tzdAkGmh06hYmLgFin/k0btrwvCFZTI6z9qL7Buo3Qk=";
-        main = "sha256-DhQPqoXdr7tLEZMYvpzwnW2iKEecGm5P/0seOTe/qyA=";
+        main = "sha256-9bS8YClM0ioZ3RMbwhi3ctIOXReubnNa/MhZWzMXQ+8=";
         nightly = "sha256-EOerPW6xzFurx9ZOMrkQzkYOcgKjaNrr+BBhRiNZwJE=";
       };
     in {
